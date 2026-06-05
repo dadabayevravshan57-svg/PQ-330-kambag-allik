@@ -274,7 +274,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           <div class="f"><label>Turi</label>
             <select id="ambularTuri">
               <option value="">— Tanlang —</option>
-              <option value="Uy">Uy</option>
+              <option value="Uy statsionari sharoitida">Uy statsionari sharoitida</option>
               <option value="Kunduzgi statsionar sharoitda">Kunduzgi statsionar sharoitda</option>
               <option value="Ambulator tavsiya asosida">Ambulator tavsiya asosida</option>
             </select>
@@ -825,7 +825,7 @@ async function exportExcel(){
     await loadRecords();
   }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
-  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)','Ambulatoriya (+/-)','Statsionar: Tuman darajasida (+/-)','Statsionar: Viloyat darajasida (+/-)','Ambulator sharoitda (+/-)','Ambulator boshlangan sana','Ambulator tugagan sana','Uy (+/-)','Kunduzgi statsionar (+/-)','Ambulator tavsiya (+/-)','Statsionar sharoitda (+/-)',
+  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)','Ambulatoriya (+/-)','Statsionar: Tuman darajasida (+/-)','Statsionar: Viloyat darajasida (+/-)','Ambulator sharoitda (+/-)','Ambulator boshlangan sana','Ambulator tugagan sana','Uy statsionari sharoitida (+/-)','Kunduzgi statsionar (+/-)','Ambulator tavsiya (+/-)','Statsionar sharoitda (+/-)',
     'Tuman: Boshlangan sana','Tuman: Tugagan sana','Tuman: Konservativ (+/-)','Tuman: Jarrohlik (+/-)',
     'Viloyat: Boshlangan sana','Viloyat: Tugagan sana','Viloyat: Konservativ (+/-)','Viloyat: Jarrohlik (+/-)','Viloyat: Yuqori texnologik (+/-)',
     'Respublika: Boshlangan sana','Respublika: Tugagan sana','Respublika: Konservativ (+/-)','Respublika: Yuqori texnologik jarrohlik (+/-)'];
@@ -854,7 +854,7 @@ async function exportExcel(){
     r.tibbiy_yordam==='Ambulator sharoitda'?'+':'',
     r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_boshlangan?fd(r.davo_boshlangan):'',
     r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_tugagan?fd(r.davo_tugagan):'',
-    r.ambular_turi==='Uy'?'+':'',
+    r.ambular_turi==='Uy statsionari sharoitida'?'+':'',
     r.ambular_turi==='Kunduzgi statsionar sharoitda'?'+':'',
     r.ambular_turi==='Ambulator tavsiya asosida'?'+':'',
     r.tibbiy_yordam==='Statsionar sharoitda'?'+':'',
