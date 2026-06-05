@@ -1040,13 +1040,14 @@ function renderPager(total){
   const div = document.createElement('div');
   div.id = 'pager';
   div.style.cssText = 'display:flex;gap:8px;align-items:center;justify-content:center;padding:12px;flex-wrap:wrap';
-  div.innerHTML = `
-    <span style="font-size:13px;color:#666">Jami: <strong>${total}</strong> ta | Sahifa: <strong>${_currentPage+1}</strong>/${pages}</span>
-    ${_currentPage>0?`<button onclick="goPage(0)" style="padding:4px 10px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff">« Bosh</button>`:''}
-    ${_currentPage>0?`<button onclick="goPage(${_currentPage-1})" style="padding:4px 10px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff">‹ Oldingi</button>`:''}
-    ${_currentPage<pages-1?`<button onclick="goPage(${_currentPage+1})" style="padding:4px 10px;border:1px solid #185FA5;border-radius:6px;cursor:pointer;background:#185FA5;color:#fff">Keyingi ›</button>`:''}
-    ${_currentPage<pages-1?`<button onclick="goPage(${pages-1})" style="padding:4px 10px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff">Oxiri »</button>`:''}
-  `;
+  const btnStyle = 'padding:4px 10px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff';
+  const btnStylePrim = 'padding:4px 10px;border:1px solid #185FA5;border-radius:6px;cursor:pointer;background:#185FA5;color:#fff';
+  let btns = '<span style="font-size:13px;color:#666">Jami: <strong>'+total+'</strong> ta | Sahifa: <strong>'+(_currentPage+1)+'</strong>/'+pages+'</span>';
+  if(_currentPage>0) btns += '<button onclick="goPage(0)" style="'+btnStyle+'">&#171; Bosh</button>';
+  if(_currentPage>0) btns += '<button onclick="goPage('+(_currentPage-1)+')" style="'+btnStyle+'">&#8249; Oldingi</button>';
+  if(_currentPage<pages-1) btns += '<button onclick="goPage('+(_currentPage+1)+')" style="'+btnStylePrim+'">Keyingi &#8250;</button>';
+  if(_currentPage<pages-1) btns += '<button onclick="goPage('+(pages-1)+')" style="'+btnStyle+'">Oxiri &#187;</button>';
+  div.innerHTML = btns;
   document.getElementById('tblBody').closest('table').after(div);
 }
 
