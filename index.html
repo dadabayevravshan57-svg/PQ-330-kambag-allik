@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PQ-330 — Tibbiy Ko'rik Tizimi</title>
+<title>PQ-330 — Kambag'allik ro'yxati tibbiy ko'rik tizimi</title>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -97,7 +97,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
     <div class="login-logo">
       <div class="icon">🏥</div>
       <h1>PQ-330</h1>
-      <p>Uchqo'rg'on tumani tibbiy ko'rik tizimi</p>
+      <p>Uchqo'rg'on tumanidagi kambag'allik ro'yxatida turuvchi fuqarolarni tibbiy ko'rikdan o'tkazish tizimi</p>
     </div>
     <div class="login-tabs">
       <button class="ltab active" onclick="setRole('xodim',this)">👤 Xodim</button>
@@ -115,7 +115,10 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
 <!-- APP -->
 <div class="app" id="appWrap">
   <div class="topbar">
-    <h1>🏥 PQ-330 — Uchqo'rg'on tumani tibbiy ko'rik ro'yxatga olish tizimi</h1>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <h1 style="font-size:15px;line-height:1.3">🏥 Uchqo'rg'on tumanidagi kambag'allik ro'yxatida turuvchi fuqarolarni tibbiy ko'rikdan o'tkazish tizimi</h1>
+      <span style="font-size:11px;color:#a8c8f0;font-style:italic">💻 Dasturchi: Davolash ishlari bo'yicha boshliq o'rinbosari — Dadabayev R.M</span>
+    </div>
     <div class="topbar-right">
       <span id="roleBadge" class="user-badge">Xodim</span>
       <button class="btn-out" onclick="doLogout()">🚪 Chiqish</button>
