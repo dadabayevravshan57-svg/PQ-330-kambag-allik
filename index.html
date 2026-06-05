@@ -193,7 +193,13 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           <input id="korikSana" type="date">
           <span class="hint" id="dateHint"></span>
         </div>
-        <div class="f"><label>MKB-10 kodi</label><input id="mkb10" type="text" placeholder="J45, I10..." oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="f" style="position:relative">
+          <label>MKB-10 kodi</label>
+          <input id="mkb10" type="text" placeholder="J45, I10..." autocomplete="off"
+            oninput="this.value=this.value.toUpperCase();mkb10Search(this.value)"
+            onblur="setTimeout(()=>{document.getElementById('mkb10List').style.display='none'},200)">
+          <div id="mkb10List" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.15)"></div>
+        </div>
         <div class="f full"><label>Tashxis</label><input id="tashxis" type="text" placeholder="Tashxis tavsifi (ixtiyoriy)"></div>
       </div>
 
@@ -350,6 +356,7 @@ async function loadRecords(){
   if(!error) allRecords = data||[];
   allRecords.forEach((r,i)=>r._idx=i+1);
   renderTable();
+  loadMkb10();
   updateCount();
 }
 
@@ -483,6 +490,38 @@ async function deleteAll(){
   await sb.from('bemorlar').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await loadRecords();
   showAlert('Barcha ma\'lumotlar o\'chirildi','ok');
+}
+
+let mkb10Cache = [];
+
+async function loadMkb10(){
+  if(mkb10Cache.length) return;
+  const {data} = await sb.from('mkb10').select('kod,nomi').order('kod');
+  if(data) mkb10Cache = data;
+}
+
+function mkb10Search(val){
+  const list = document.getElementById('mkb10List');
+  if(!val || val.length < 2){ list.style.display='none'; return; }
+  const q = val.toLowerCase();
+  const matches = mkb10Cache.filter(x =>
+    x.kod.toLowerCase().startsWith(q) || x.nomi.toLowerCase().includes(q)
+  ).slice(0, 15);
+  if(!matches.length){ list.style.display='none'; return; }
+  list.innerHTML = matches.map(x => `
+    <div onclick="selectMkb10('${x.kod}','${x.nomi.replace(/'/g,"&#39;")}')"
+      style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px"
+      onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background=''">
+      <span style="color:#d35400;font-weight:bold;margin-right:8px">${x.kod}</span>
+      <span style="color:#333">${x.nomi}</span>
+    </div>`).join('');
+  list.style.display='block';
+}
+
+function selectMkb10(kod, nomi){
+  document.getElementById('mkb10').value = kod;
+  document.getElementById('tashxis').value = nomi;
+  document.getElementById('mkb10List').style.display='none';
 }
 
 function renderTable(){
