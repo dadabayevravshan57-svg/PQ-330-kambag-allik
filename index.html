@@ -877,7 +877,7 @@ async function exportExcel(){
 
   // Stil yordamchi funksiyalar
   const hdrStyle = (bgColor) => ({
-    font: {name:'Times New Roman', size:11, bold:true, color:{argb:'FFFFFFFF'}},
+    font: {name:'Times New Roman', size:11, bold:true, color:{argb:'FF000000'}},
     fill: {type:'pattern', pattern:'solid', fgColor:{argb:'FF'+bgColor}},
     alignment: {horizontal:'center', vertical:'middle', wrapText:true},
     border: {top:{style:'thin'},bottom:{style:'thin'},left:{style:'thin'},right:{style:'thin'}}
@@ -900,7 +900,7 @@ async function exportExcel(){
   }
 
   // ---- SARLAVHA QATORLARI ----
-  const hColors = ['8B4513','A0522D','CD853F','DEB887'];
+  const hColors = ['BDD7EE','C6EFCE','E2AFDE','FCE4D6'];
 
   // R0
   const r0vals = [];
@@ -959,7 +959,7 @@ async function exportExcel(){
   // Ustun joylashuvi:
   // 1-16: Asosiy, 17-20: Xavf(4), 21-22: Holat(2), 23-29: Kasallik(7)
   // 30-33: Davolash(4): 30=Ambul, 31-33=Stats(Tuman,Viloyat,Resp)
-  // 34-50: Ko'rsatilgan(17): 34-38=Ambular(5), 39-51=Stats(13)
+  // 34-51: Ko'rsatilgan(18): 34-38=Ambular(5), 39-51=Stats(13)
   //   Ambular: 34-35=Davo(2), 36-38=Turi(3)
   //   Stats tibbiy: 39-42=Tuman(4), 43-47=Viloyat(5), 48-51=Resp(4)
 
@@ -980,8 +980,8 @@ async function exportExcel(){
   ws.mergeCells(2,31,2,33);
   // R3: C31,C32,C33 alohida (Tuman, Viloyat, Respublika +/-)
 
-  // Ko'rsatilgan tibbiy yordam: R1, C34:C50 = 1q x 17u
-  ws.mergeCells(1,34,1,50);
+  // Ko'rsatilgan tibbiy yordam: R1, C34:C51 = 1q x 18u
+  ws.mergeCells(1,34,1,51);
 
   // Ambulator sharoitda: R2, C34:C38 = 1q x 5u
   ws.mergeCells(2,34,2,38);
@@ -1040,7 +1040,7 @@ async function exportExcel(){
   const sd2 = MFY_LIST.map(m=>{const tr=allRecords.filter(r=>r.mfy===m);return[m,tr.length,tr.filter(r=>r.korik_sana).length,tr.filter(r=>!r.korik_sana).length,tr.filter(r=>r.jinsi==='Erkak').length,tr.filter(r=>r.jinsi==='Ayol').length,tr.filter(r=>r.mkb10).length];});
   sd2.push(['JAMI',allRecords.length,allRecords.filter(r=>r.korik_sana).length,allRecords.filter(r=>!r.korik_sana).length,allRecords.filter(r=>r.jinsi==='Erkak').length,allRecords.filter(r=>r.jinsi==='Ayol').length,allRecords.filter(r=>r.mkb10).length]);
   const hRow2 = ws2.addRow(sh2);
-  applyRow(hRow2, hdrStyle('8B4513'));
+  applyRow(hRow2, hdrStyle('BDD7EE'));
   sd2.forEach((rowD,i)=>{
     const row2=ws2.addRow(rowD);
     applyRow(row2, dataStyle(i%2===0));
