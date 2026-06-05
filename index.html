@@ -183,6 +183,9 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
             <option>Paxtachi OShP</option>
           </select>
         </div>
+        <div class="f full"><label>Biriktirilgan oilaviy shifokor F.I.Sh</label>
+          <input id="oilaviyShifokor" type="text" placeholder="Shifokor familyasi ismi sharifi">
+        </div>
       </div>
 
       <div class="section-title">🩺 Tibbiy ko'rik</div>
@@ -193,7 +196,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
             <option value="">— Tanlang —</option>
             <option>Yanvar</option><option>Fevral</option><option>Mart</option><option>Aprel</option>
             <option>May</option><option>Iyun</option><option>Iyul</option><option>Avgust</option>
-            <option>Sentabr</option><option>Oktabr</option><option>Noyabr</option><option>Dekabr</option>
+            <option>Sentyabr</option><option>Oktyabr</option><option>Noyabr</option><option>Dekabr</option>
           </select>
         </div>
         <div class="f">
@@ -394,7 +397,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
       <table>
         <thead><tr>
           <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
-          <th>Tug'ilgan sana</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
+          <th>Tug'ilgan sana</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th><th>Oilaviy shifokor</th>
           <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th>Xavf</th><th>Holat</th><th>Kasallik guruhi</th><th>Davolash</th><th id="delCol">Amallar</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
@@ -443,7 +446,7 @@ const SURL = 'https://odqakxaxbeqnjabckhci.supabase.co';
 const SKEY = 'sb_publishable_QRiasrkkjMElDmwkAaYxzw_2FbtHU5Z';
 const sb = supabase.createClient(SURL, SKEY);
 
-const OY = {'Yanvar':'01','Fevral':'02','Mart':'03','Aprel':'04','May':'05','Iyun':'06','Iyul':'07','Avgust':'08','Sentabr':'09','Oktabr':'10','Noyabr':'11','Dekabr':'12'};
+const OY = {'Yanvar':'01','Fevral':'02','Mart':'03','Aprel':'04','May':'05','Iyun':'06','Iyul':'07','Avgust':'08','Sentyabr':'09','Oktyabr':'10','Noyabr':'11','Dekabr':'12'};
 const MFY_LIST = ["Chek","Ulug'bek","Yoshlik","Ko'g'ay","Islomobod","Uchyog'och","Navro'z","Nurobod","Namuna","Birlik","Shahrihonchek","Ko'g'ay o'lmas","Yorqinboychek","Bahriyobod","Obod","Ozod","Yangiobod","Norin","Navbahor","Istiqlol","Yopisxon","Katta Chek","Qozoqovul","Baxt","Xalfato'pi","Yashiq","Eshonto'pi","Atlas","Elatan","Ko'chaboshi","Yangiyer","Guliston","Bo'ston","Yog'du","Dehqonobod","Mehnatobod","Uchko'prik","Paxtachi","Qo'rg'oncha","Madaniyat","Ko'prikboshi","Qumto'g'on","Sohil","O'rdabog'","Turkiston","Yorqin hayot","Sanoat","Farg'ona","Shodlik","Fayziobod","Oqtovliq","Navoiy","Farovon","Sholdirma","Mustaqillik","Tegirmon","Kattamo'g'ol","Tinchlik","Istiqbol","Yangi hayot","Qurama"];
 
 let currentRole = '';
@@ -566,7 +569,7 @@ async function saveRecord(){
     viloyat:'Namangan viloyati', tuman:"Uchqo'rg'on tumani",
     mfy:gv('mfy'), familya:gv('familya'), ism:gv('ism'), sharif:gv('sharif'),
     jshshir:gv('jshshir'), tugilgan_sana:gv('yosh')||null, jinsi:gv('jinsi'),
-    oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
+    oila:parseInt(gv('oila')), muassasa:gv('muassasa'), oilaviy_shifokor:gv('oilaviyShifokor')||null, reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
     xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
     davolash_rejasi:gv('davolashRejasi')||null,
@@ -603,7 +606,7 @@ async function saveRecord(){
 }
 
 function clearForm(){
-  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri','tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','oilaviyShifokor','tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri','tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('statsionarDiv').style.display='none';
   document.getElementById('ambularDiv').style.display='none';
   document.getElementById('statsionarYordamDiv').style.display='none';
@@ -864,6 +867,7 @@ function renderTable(){
       <td><span class="badge ${r.jinsi==='Erkak'?'bm':'bf'}">${r.jinsi}</span></td>
       <td style="text-align:center">${r.oila}</td>
       <td style="font-size:11px">${r.muassasa}</td>
+      <td style="font-size:11px">${r.oilaviy_shifokor||'—'}</td>
       <td>${r.reja_oy}</td>
       <td>${r.korik_sana?`<span class="badge bd">${fd(r.korik_sana)}</span>`:'<span class="badge bw">Kutilmoqda</span>'}</td>
       <td>${r.mkb10?`<span class="badge" style="background:#fef5e7;color:#d35400">${r.mkb10}</span>`:'—'}</td>
@@ -941,7 +945,7 @@ async function exportExcel(){
 
   // Asosiy (0-15)
   for(let i=0;i<16;i++){r0vals.push('');r1vals.push('');r2vals.push('');}
-  r3vals.push('№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis");
+  r3vals.push('№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Oilaviy shifokor F.I.Sh","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis");
 
   // Xavf (16-19)
   r0vals.push('Tasnif xavf guruhi','','','');
@@ -1032,7 +1036,7 @@ async function exportExcel(){
 
   // ---- MA'LUMOTLAR ----
   allRecords.forEach((r,i) => {
-    const rowData = [i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.tugilgan_sana||'',r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
+    const rowData = [i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.tugilgan_sana||'',r.jinsi,r.oila,r.muassasa,r.oilaviy_shifokor||'',r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
       r.xavf_guruhi==='1'?'+':'', r.xavf_guruhi==='2'?'+':'', r.xavf_guruhi==='3'?'+':'', r.xavf_guruhi==='4'?'+':'',
       r.kasallik_holati==='Birlamchi'?'+':'', r.kasallik_holati==='Dispanser nazoratiga olingan'?'+':'',
       r.kasallik_guruhi==='Asab tizimi kasalliklari'?'+':'',
