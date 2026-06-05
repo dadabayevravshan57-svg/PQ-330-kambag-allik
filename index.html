@@ -236,6 +236,21 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
             <option value="Endokrin tizimi kasalliklari">Endokrin tizimi kasalliklari</option>
           </select>
         </div>
+        <div class="f"><label>Davolash rejasi</label>
+          <select id="davolashRejasi" onchange="toggleStatsionar(this.value)">
+            <option value="">— Tanlang —</option>
+            <option value="Ambulatoriya">Ambulatoriya</option>
+            <option value="Statsionar">Statsionar</option>
+          </select>
+        </div>
+        <div id="statsionarDiv" style="display:none" class="f"><label>Statsionar darajasi</label>
+          <select id="statsionarDaraja">
+            <option value="">— Tanlang —</option>
+            <option value="Tuman darajasida">Tuman darajasida</option>
+            <option value="Viloyat darajasida">Viloyat darajasida</option>
+            <option value="Respublika darajasida">Respublika darajasida</option>
+          </select>
+        </div>
       </div>
 
       <div class="actions">
@@ -261,7 +276,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         <thead><tr>
           <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
           <th>Yoshi</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
-          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th>Xavf</th><th>Holat</th><th>Kasallik guruhi</th><th id="delCol">Amallar</th>
+          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th>Xavf</th><th>Holat</th><th>Kasallik guruhi</th><th>Davolash</th><th id="delCol">Amallar</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
       </table>
@@ -434,7 +449,8 @@ async function saveRecord(){
     jshshir:gv('jshshir'), yosh:parseInt(gv('yosh')), jinsi:gv('jinsi'),
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
-    xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null
+    xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
+    davolash_rejasi:gv('davolashRejasi')||null, statsionar_daraja:gv('statsionarDaraja')||null
   };
 
   if(editId){
@@ -458,7 +474,8 @@ async function saveRecord(){
 }
 
 function clearForm(){
-  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi'].forEach(id=>document.getElementById(id).value='');
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','statsionarDaraja'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('statsionarDiv').style.display='none';
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
@@ -502,6 +519,11 @@ function editRecord(id){
   for(let i=0;i<holatiSel.options.length;i++){if(holatiSel.options[i].value===r.kasallik_holati){holatiSel.selectedIndex=i;break;}}
   const guruhiSel=document.getElementById('kasallikGuruhi');
   for(let i=0;i<guruhiSel.options.length;i++){if(guruhiSel.options[i].value===r.kasallik_guruhi){guruhiSel.selectedIndex=i;break;}}
+  const rejaSel=document.getElementById('davolashRejasi');
+  for(let i=0;i<rejaSel.options.length;i++){if(rejaSel.options[i].value===r.davolash_rejasi){rejaSel.selectedIndex=i;break;}}
+  toggleStatsionar(r.davolash_rejasi||'');
+  const darajaSel=document.getElementById('statsionarDaraja');
+  for(let i=0;i<darajaSel.options.length;i++){if(darajaSel.options[i].value===r.statsionar_daraja){darajaSel.selectedIndex=i;break;}}
   // Switch to form tab
   document.querySelector('.tab').click();
   // Mark as editing
@@ -536,6 +558,16 @@ async function deleteAll(){
   await sb.from('bemorlar').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await loadRecords();
   showAlert('Barcha ma\'lumotlar o\'chirildi','ok');
+}
+
+function toggleStatsionar(val){
+  const div = document.getElementById('statsionarDiv');
+  if(val === 'Statsionar'){
+    div.style.display = 'block';
+  } else {
+    div.style.display = 'none';
+    document.getElementById('statsionarDaraja').value = '';
+  }
 }
 
 let mkb10Cache = [];
@@ -638,6 +670,7 @@ function renderTable(){
       <td style="text-align:center">${r.xavf_guruhi?`<span class="badge" style="background:#e8f5e9;color:#2e7d32">${r.xavf_guruhi}-guruh</span>`:'—'}</td>
       <td style="font-size:11px">${r.kasallik_holati?`<span class="badge" style="background:#e3f2fd;color:#1565c0;font-size:10px">${r.kasallik_holati}</span>`:'—'}</td>
       <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${r.kasallik_guruhi||'—'}</td>
+      <td style="font-size:11px">${r.davolash_rejasi?`<span class="badge" style="background:${r.davolash_rejasi==='Statsionar'?'#fce4ec':'#e8f5e9'};color:${r.davolash_rejasi==='Statsionar'?'#c62828':'#2e7d32'}">${r.davolash_rejasi}${r.statsionar_daraja?' — '+r.statsionar_daraja:''}</span>`:'—'}</td>
       <td style="white-space:nowrap"><button class="btn-edit" onclick="editRecord('${r.id}')">✏️ Tahrir</button> ${currentRole==='admin'?`<button class="btn-del" onclick="deleteRecord('${r.id}')">🗑</button>`:''}</td>
     </tr>`).join('');
 }
@@ -670,7 +703,7 @@ async function exportExcel(){
     await loadRecords();
   }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
-  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)'];
+  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)','Ambulatoriya (+/-)','Statsionar: Tuman darajasida (+/-)','Statsionar: Viloyat darajasida (+/-)','Statsionar: Respublika darajasida (+/-)'];
   const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
     r.xavf_guruhi==='1'?'+':'',
     r.xavf_guruhi==='2'?'+':'',
@@ -684,7 +717,11 @@ async function exportExcel(){
     r.kasallik_guruhi==='Peshob-ayirish tizimi kasalliklari'?'+':'',
     r.kasallik_guruhi==="Teri-tanosil a'zolari kasalliklari"?'+':'',
     r.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':''
+    r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':'',
+    r.davolash_rejasi==='Ambulatoriya'?'+':'',
+    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Tuman darajasida')?'+':'',
+    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Viloyat darajasida')?'+':'',
+    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Respublika darajasida')?'+':''
   ]);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
