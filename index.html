@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PQ-330 — Tibbiy Ko'rik Tizimi</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
@@ -871,171 +872,148 @@ async function exportExcel(){
   if(!allRecords.length){ await loadRecords(); }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
 
-  // ============ DATA ============
-  const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
-    // Xavf guruhi (col 16-19)
-    r.xavf_guruhi==='1'?'+':'', r.xavf_guruhi==='2'?'+':'', r.xavf_guruhi==='3'?'+':'', r.xavf_guruhi==='4'?'+':'',
-    // Kasallik holati (col 20-21)
-    r.kasallik_holati==='Birlamchi'?'+':'', r.kasallik_holati==='Dispanser nazoratiga olingan'?'+':'',
-    // Kasallik guruhi (col 22-28)
-    r.kasallik_guruhi==='Asab tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==='Yurak qon-tomir tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==='Nafas olish tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==='Peshob-ayirish tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==="Teri-tanosil a'zolari kasalliklari"?'+':'',
-    r.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari'?'+':'',
-    r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':'',
-    // Davolash rejasi (col 29-33): Ambulator | Statsionar | Tuman | Viloyat | Respublika
-    r.davolash_rejasi==='Ambulatoriya'?'+':'',
-    r.dav_tuman?'+':'', r.dav_viloyat?'+':'', r.dav_resp?'+':'',
-    // Ko'rsatilgan tibbiy yordam - Ambulator (col 34-38, 5 ta)
-    r.davo_boshlangan?fd(r.davo_boshlangan):'',
-    r.davo_tugagan?fd(r.davo_tugagan):'',
-    r.ambular_turi==='Uy statsionari sharoitida'?'+':'',
-    r.ambular_turi==='Kunduzgi statsionar sharoitda'?'+':'',
-    r.ambular_turi==='Ambulator tavsiya asosida'?'+':'',
-    // Ko'rsatilgan tibbiy yordam - Statsionar (col 34-46, 13 ta)
-    r.tuman_boshlangan?fd(r.tuman_boshlangan):'', r.tuman_tugagan?fd(r.tuman_tugagan):'',
-    r.tuman_davo_turi==='Konservativ'?'+':'', r.tuman_davo_turi==='Jarrohlik'?'+':'',
-    r.viloyat_boshlangan?fd(r.viloyat_boshlangan):'', r.viloyat_tugagan?fd(r.viloyat_tugagan):'',
-    r.viloyat_davo_turi==='Konservativ'?'+':'', r.viloyat_davo_turi==='Jarrohlik'?'+':'', r.viloyat_davo_turi==='Yuqori texnologik'?'+':'',
-    r.resp_boshlangan?fd(r.resp_boshlangan):'', r.resp_tugagan?fd(r.resp_tugagan):'',
-    r.resp_davo_turi==='Konservativ'?'+':'', r.resp_davo_turi==='Yuqori texnologik jarrohlik'?'+':''
-  ]);
+  const workbook = new ExcelJS.Workbook();
+  const ws = workbook.addWorksheet("Tibbiy Ko'rik");
 
-  // ============ 4 QATORLI SARLAVHA ============
-  // Jami ustunlar: 0-15 asosiy, 16-28 tibbiy, 29-33 davolash, 34-39 ambular, 40-53 statsionar
-  const R0=[]; const R1=[]; const R2=[]; const R3=[];
-  
+  // Stil yordamchi funksiyalar
+  const hdrStyle = (bgColor) => ({
+    font: {name:'Times New Roman', size:11, bold:true, color:{argb:'FFFFFFFF'}},
+    fill: {type:'pattern', pattern:'solid', fgColor:{argb:'FF'+bgColor}},
+    alignment: {horizontal:'center', vertical:'middle', wrapText:true},
+    border: {top:{style:'thin'},bottom:{style:'thin'},left:{style:'thin'},right:{style:'thin'}}
+  });
+  const dataStyle = (even) => ({
+    font: {name:'Times New Roman', size:11},
+    fill: {type:'pattern', pattern:'solid', fgColor:{argb: even?'FFEBF3FA':'FFFFFFFF'}},
+    alignment: {horizontal:'center', vertical:'middle', wrapText:true},
+    border: {top:{style:'thin'},bottom:{style:'thin'},left:{style:'thin'},right:{style:'thin'}}
+  });
+
+  function applyRow(row, styleObj){
+    row.eachCell({includeEmpty:true}, cell => {
+      cell.font = styleObj.font;
+      cell.fill = styleObj.fill;
+      cell.alignment = styleObj.alignment;
+      cell.border = styleObj.border;
+    });
+    row.height = 40;
+  }
+
+  // ---- SARLAVHA QATORLARI ----
+  const hColors = ['1565C0','1976D2','1E88E5','42A5F5'];
+
+  // R0
+  const r0vals = [];
+  const r1vals = [];
+  const r2vals = [];
+  const r3vals = [];
+
   // Asosiy (0-15)
-  const asosiy=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis"];
-  asosiy.forEach(h=>{R0.push('');R1.push('');R2.push('');R3.push(h);});
+  for(let i=0;i<16;i++){r0vals.push('');r1vals.push('');r2vals.push('');}
+  r3vals.push('№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis");
 
-  // Tasnif xavf (16-19)
-  R0.push('Tasnif xavf guruhi'); R0.push(''); R0.push(''); R0.push('');
-  R1.push(''); R1.push(''); R1.push(''); R1.push('');
-  R2.push(''); R2.push(''); R2.push(''); R2.push('');
-  R3.push('1-guruh (+/-)'); R3.push('2-guruh (+/-)'); R3.push('3-guruh (+/-)'); R3.push('4-guruh (+/-)');
+  // Xavf (16-19)
+  r0vals.push('Tasnif xavf guruhi','','','');
+  r1vals.push('','','','');
+  r2vals.push('','','','');
+  r3vals.push('1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)');
 
-  // Kasallik holati (20-21)
-  R0.push('Kasallik holati'); R0.push('');
-  R1.push(''); R1.push('');
-  R2.push(''); R2.push('');
-  R3.push('Birlamchi (+/-)'); R3.push('Dispanser nazoratiga olingan (+/-)');
+  // Holat (20-21)
+  r0vals.push('Kasallik holati','');
+  r1vals.push('','');
+  r2vals.push('','');
+  r3vals.push('Birlamchi (+/-)','Dispanser nazoratiga olingan (+/-)');
 
   // Kasallik guruhi (22-28)
-  R0.push('Kasallik guruhlari'); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push('');
-  R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push('');
-  R2.push(''); R2.push(''); R2.push(''); R2.push(''); R2.push(''); R2.push(''); R2.push('');
-  R3.push('Asab tizimi (+/-)'); R3.push('Yurak qon-tomir (+/-)'); R3.push('Nafas olish (+/-)'); R3.push('Peshob-ayirish (+/-)'); R3.push("Teri-tanosil (+/-)"); R3.push('Suyak-mushak (+/-)'); R3.push('Endokrin tizimi (+/-)');
+  r0vals.push('Kasallik guruhlari','','','','','','');
+  r1vals.push('','','','','','','');
+  r2vals.push('','','','','','','');
+  r3vals.push('Asab tizimi (+/-)','Yurak qon-tomir (+/-)','Nafas olish (+/-)','Peshob-ayirish (+/-)','Teri-tanosil (+/-)','Suyak-mushak (+/-)','Endokrin tizimi (+/-)');
 
-  // Davolash rejasi (29-32): 4 ustun - ambul, tuman, viloyat, respublika
-  R0.push('Davolash rejasi'); R0.push(''); R0.push(''); R0.push('');
-  R1.push('Ambulatoriya (+/-)'); R1.push('Statsionar sharoitda'); R1.push(''); R1.push('');
-  R2.push(''); R2.push('Tuman darajasida (+/-)'); R2.push('Viloyat darajasida (+/-)'); R2.push('Respublika darajasida (+/-)');
-  R3.push('(+/-)'); R3.push('(+/-)'); R3.push('(+/-)'); R3.push('(+/-)');
+  // Davolash rejasi (29-32)
+  r0vals.push('Davolash rejasi','','','');
+  r1vals.push('Ambulatoriya (+/-)','Statsionar sharoitda','','');
+  r2vals.push('','Tuman darajasida (+/-)','Viloyat darajasida (+/-)','Respublika darajasida (+/-)');
+  r3vals.push('(+/-)','(+/-)','(+/-)','(+/-)');
 
+  // Ko'rsatilgan tibbiy yordam - Ambulator (33-37)
+  r0vals.push("Ko'rsatilgan tibbiy yordam",'','','','');
+  r1vals.push('Ambulator sharoitda','','','','');
+  r2vals.push('Davo','','Turi','','');
+  r3vals.push('Boshlangan sana','Tugagan sana','Uy statsionari (+/-)','Kunduzgi statsionar (+/-)','Ambulator tavsiya (+/-)');
 
+  // Ko'rsatilgan tibbiy yordam - Statsionar (38-50)
+  for(let i=0;i<13;i++) r0vals.push('');
+  r1vals.push('Statsionar sharoitda','','','','','','','','','','','','');
+  r2vals.push('Tuman darajasida','','','','Viloyat darajasida','','','','','Respublika darajasida','','','');
+  r3vals.push('Boshlangan','Tugagan','Konservativ (+/-)','Jarrohlik (+/-)','Boshlangan','Tugagan','Konservativ (+/-)','Jarrohlik (+/-)','Yuqori texnologik (+/-)','Boshlangan','Tugagan','Konservativ (+/-)','Yuqori texnologik jarrohlik (+/-)');
 
-  // Ko'rsatilgan tibbiy yordam - Ambulator (34-38, 5 ustun, (+/-) olib tashlandi)
-  R0.push("Ko'rsatilgan tibbiy yordam"); R0.push(''); R0.push(''); R0.push(''); R0.push('');
-  R1.push('Ambulator sharoitda'); R1.push(''); R1.push(''); R1.push(''); R1.push('');
-  R2.push('Davo'); R2.push(''); R2.push('Turi'); R2.push(''); R2.push('');
-  R3.push('Boshlangan sana'); R3.push('Tugagan sana'); R3.push('Uy statsionari (+/-)'); R3.push('Kunduzgi statsionar (+/-)'); R3.push('Ambulator tavsiya (+/-)');
+  const rows = [r0vals, r1vals, r2vals, r3vals];
+  rows.forEach((rv, ri) => {
+    const row = ws.addRow(rv);
+    applyRow(row, hdrStyle(hColors[ri]));
+    row.height = ri===3 ? 55 : 35;
+  });
 
-  // Ko'rsatilgan tibbiy yordam - Statsionar (39-51, 13 ustun)
-  R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push(''); R0.push('');
-  R1.push('Statsionar sharoitda'); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push(''); R1.push('');
-  R2.push('Tuman darajasida'); R2.push(''); R2.push(''); R2.push(''); R2.push('Viloyat darajasida'); R2.push(''); R2.push(''); R2.push(''); R2.push(''); R2.push('Respublika darajasida'); R2.push(''); R2.push(''); R2.push('');
-  R3.push('Boshlangan'); R3.push('Tugagan'); R3.push('Konservativ (+/-)'); R3.push('Jarrohlik (+/-)'); R3.push('Boshlangan'); R3.push('Tugagan'); R3.push('Konservativ (+/-)'); R3.push('Jarrohlik (+/-)'); R3.push('Yuqori texnologik (+/-)'); R3.push('Boshlangan'); R3.push('Tugagan'); R3.push('Konservativ (+/-)'); R3.push('Yuqori texnologik jarrohlik (+/-)');
+  // ---- MA'LUMOTLAR ----
+  allRecords.forEach((r,i) => {
+    const rowData = [i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
+      r.xavf_guruhi==='1'?'+':'', r.xavf_guruhi==='2'?'+':'', r.xavf_guruhi==='3'?'+':'', r.xavf_guruhi==='4'?'+':'',
+      r.kasallik_holati==='Birlamchi'?'+':'', r.kasallik_holati==='Dispanser nazoratiga olingan'?'+':'',
+      r.kasallik_guruhi==='Asab tizimi kasalliklari'?'+':'',
+      r.kasallik_guruhi==='Yurak qon-tomir tizimi kasalliklari'?'+':'',
+      r.kasallik_guruhi==='Nafas olish tizimi kasalliklari'?'+':'',
+      r.kasallik_guruhi==='Peshob-ayirish tizimi kasalliklari'?'+':'',
+      r.kasallik_guruhi==="Teri-tanosil a'zolari kasalliklari"?'+':'',
+      r.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari'?'+':'',
+      r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':'',
+      r.davolash_rejasi==='Ambulatoriya'?'+':'',
+      r.dav_tuman?'+':'', r.dav_viloyat?'+':'', r.dav_resp?'+':'',
+      r.davo_boshlangan?fd(r.davo_boshlangan):'',
+      r.davo_tugagan?fd(r.davo_tugagan):'',
+      r.ambular_turi==='Uy statsionari sharoitida'?'+':'',
+      r.ambular_turi==='Kunduzgi statsionar sharoitda'?'+':'',
+      r.ambular_turi==='Ambulator tavsiya asosida'?'+':'',
+      r.tuman_boshlangan?fd(r.tuman_boshlangan):'', r.tuman_tugagan?fd(r.tuman_tugagan):'',
+      r.tuman_davo_turi==='Konservativ'?'+':'', r.tuman_davo_turi==='Jarrohlik'?'+':'',
+      r.viloyat_boshlangan?fd(r.viloyat_boshlangan):'', r.viloyat_tugagan?fd(r.viloyat_tugagan):'',
+      r.viloyat_davo_turi==='Konservativ'?'+':'', r.viloyat_davo_turi==='Jarrohlik'?'+':'', r.viloyat_davo_turi==='Yuqori texnologik'?'+':'',
+      r.resp_boshlangan?fd(r.resp_boshlangan):'', r.resp_tugagan?fd(r.resp_tugagan):'',
+      r.resp_davo_turi==='Konservativ'?'+':'', r.resp_davo_turi==='Yuqori texnologik jarrohlik'?'+':''
+    ];
+    const row = ws.addRow(rowData);
+    applyRow(row, dataStyle(i%2===0));
+    row.height = 20;
+  });
 
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet([R0, R1, R2, R3, ...data]);
+  // Ustun kengliklari
+  const colWidths = [5,18,18,16,14,12,14,16,6,7,16,28,14,18,10,28,9,9,9,9,14,26,12,14,12,14,12,14,14,12,14,14,14,16,16,16,18,18,14,14,14,14,14,14,14,14,14,18,14,14,14,20];
+  colWidths.forEach((w,i)=>{ if(ws.columns[i]) ws.columns[i].width=w; });
 
-  // Ustun kengliklar
-  ws['!cols'] = [
-    // Asosiy 16 ta
-    {wch:5},{wch:18},{wch:18},{wch:16},{wch:14},{wch:12},{wch:14},{wch:16},{wch:6},{wch:7},{wch:16},{wch:28},{wch:14},{wch:18},{wch:10},{wch:28},
-    // Xavf guruhi 4 ta
-    {wch:9},{wch:9},{wch:9},{wch:9},
-    // Kasallik holati 2 ta
-    {wch:14},{wch:26},
-    // Kasallik guruhi 7 ta
-    {wch:12},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14},{wch:14},
-    // Davolash rejasi 4 ta (ambulator, statsionar, tuman, viloyat, respublika)
-    {wch:12},{wch:12},{wch:14},{wch:14},
-    // Ambulator tibbiy yordam 5 ta
-    {wch:16},{wch:16},{wch:16},{wch:18},{wch:18},
-    // Statsionar tibbiy yordam 13 ta
-    {wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:14},{wch:18},{wch:14},{wch:14},{wch:14},{wch:20}
-  ];
-
-  // Sarlavha qatorlari ranglari
-  const hColors = ['1565C0','1976D2','1E88E5','2196F3'];
-  const range = XLSX.utils.decode_range(ws['!ref']);
-
-  const borderStyle = {
-    top:{style:'thin',color:{rgb:'000000'}},
-    bottom:{style:'thin',color:{rgb:'000000'}},
-    left:{style:'thin',color:{rgb:'000000'}},
-    right:{style:'thin',color:{rgb:'000000'}}
-  };
-
-  // Sarlavha qatorlari (0-3)
-  for(let row=0; row<4; row++){
-    for(let C=range.s.c; C<=range.e.c; C++){
-      const a = XLSX.utils.encode_cell({r:row, c:C});
-      if(!ws[a]) ws[a]={t:'s',v:''};
-      ws[a].s={
-        font:{bold:true, color:{rgb:'FFFFFF'}, sz:11, name:'Times New Roman'},
-        fill:{fgColor:{rgb:hColors[row]}},
-        alignment:{horizontal:'center', vertical:'center', wrapText:true},
-        border: borderStyle
-      };
-    }
-  }
-
-  // Ma'lumot qatorlari
-  for(let R=4; R<=data.length+3; R++){
-    for(let C=range.s.c; C<=range.e.c; C++){
-      const a=XLSX.utils.encode_cell({r:R,c:C});
-      if(!ws[a]) ws[a]={t:'s',v:''};
-      ws[a].s={
-        font:{sz:11, name:'Times New Roman'},
-        fill:{fgColor:{rgb:R%2===0?'EBF3FA':'FFFFFF'}},
-        alignment:{horizontal:'center', vertical:'center', wrapText:true},
-        border: borderStyle
-      };
-    }
-  }
-
-  // Qator balandliklar
-  ws['!rows'] = [{hpt:35},{hpt:35},{hpt:40},{hpt:55}];
-
-  XLSX.utils.book_append_sheet(wb, ws, "Tibbiy Ko'rik");
   // Statistika varag'i
-  const sh=["MFY","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol","Tashxis"];
-  const sd=MFY_LIST.map(m=>{const tr=allRecords.filter(r=>r.mfy===m);return[m,tr.length,tr.filter(r=>r.korik_sana).length,tr.filter(r=>!r.korik_sana).length,tr.filter(r=>r.jinsi==='Erkak').length,tr.filter(r=>r.jinsi==='Ayol').length,tr.filter(r=>r.mkb10).length];});
-  sd.push(['JAMI',allRecords.length,allRecords.filter(r=>r.korik_sana).length,allRecords.filter(r=>!r.korik_sana).length,allRecords.filter(r=>r.jinsi==='Erkak').length,allRecords.filter(r=>r.jinsi==='Ayol').length,allRecords.filter(r=>r.mkb10).length]);
-  const ws2=XLSX.utils.aoa_to_sheet([sh,...sd]);
-  ws2['!cols']=[{wch:22},{wch:8},{wch:18},{wch:14},{wch:8},{wch:8},{wch:10}];
-  const range2=XLSX.utils.decode_range(ws2['!ref']);
-  const brd2={top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}};
-  for(let R=0;R<=sd.length;R++){
-    for(let C=range2.s.c;C<=range2.e.c;C++){
-      const a=XLSX.utils.encode_cell({r:R,c:C});
-      if(!ws2[a])ws2[a]={t:'s',v:''};
-      ws2[a].s={
-        font:{bold:R===0,sz:11,name:'Times New Roman',color:{rgb:R===0?'FFFFFF':'000000'}},
-        fill:{fgColor:{rgb:R===0?'185FA5':R%2===0?'EBF3FA':'FFFFFF'}},
-        alignment:{horizontal:'center',vertical:'center',wrapText:true},
-        border:brd2
-      };
-    }
-  }
-  XLSX.utils.book_append_sheet(wb,ws2,"Statistika");
-  const d=new Date();
-  XLSX.writeFile(wb,`PQ330_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.xlsx`);
+  const ws2 = workbook.addWorksheet('Statistika');
+  const sh2 = ["MFY","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol","Tashxis"];
+  const sd2 = MFY_LIST.map(m=>{const tr=allRecords.filter(r=>r.mfy===m);return[m,tr.length,tr.filter(r=>r.korik_sana).length,tr.filter(r=>!r.korik_sana).length,tr.filter(r=>r.jinsi==='Erkak').length,tr.filter(r=>r.jinsi==='Ayol').length,tr.filter(r=>r.mkb10).length];});
+  sd2.push(['JAMI',allRecords.length,allRecords.filter(r=>r.korik_sana).length,allRecords.filter(r=>!r.korik_sana).length,allRecords.filter(r=>r.jinsi==='Erkak').length,allRecords.filter(r=>r.jinsi==='Ayol').length,allRecords.filter(r=>r.mkb10).length]);
+  const hRow2 = ws2.addRow(sh2);
+  applyRow(hRow2, hdrStyle('185FA5'));
+  sd2.forEach((rowD,i)=>{
+    const row2=ws2.addRow(rowD);
+    applyRow(row2, dataStyle(i%2===0));
+    row2.height=20;
+  });
+  ws2.columns=[{width:22},{width:8},{width:18},{width:14},{width:8},{width:8},{width:10}];
+
+  // Yuklab olish
+  const buf = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href=url;
+  a.download=`PQ330_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // STATS
