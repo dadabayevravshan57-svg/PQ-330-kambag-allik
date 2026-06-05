@@ -170,7 +170,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           </select>
         </div>
         <div class="f"><label>Biriktirilgan muassasa *</label>
-          <select id="muassasa">
+          <select id="muassasa" onchange="onMuassasaChange(this.value)">
             <option value="">— Tanlang —</option>
             <option>Ko'p tarmoqli markaziy poliklinika</option>
             <option>38-Oilaviy poliklinika</option><option>39-Oilaviy poliklinika</option>
@@ -184,7 +184,8 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           </select>
         </div>
         <div class="f full"><label>Biriktirilgan oilaviy shifokor F.I.Sh</label>
-          <input id="oilaviyShifokor" type="text" placeholder="Shifokor familyasi ismi sharifi">
+          <input id="oilaviyShifokor" type="text" placeholder="Shifokor familyasi ismi sharifi" list="shifokorList" autocomplete="off">
+          <datalist id="shifokorList"></datalist>
         </div>
       </div>
 
@@ -748,6 +749,41 @@ function jshshirAutoFill(val){
   yoshEl.value = sana;
   hint.textContent = `✅ Tug'ilgan: ${sana}`;
   hint.style.color = '#27ae60';
+}
+
+const SHIFOKORLAR = {
+  "Ko'p tarmoqli markaziy poliklinika": ["Abduraxmanova Dilafruz","Ataxanova Farida","Axmadjanova Nilufar","Bo'stanova Lobar","G'ofurof Jaxongir","Jo'rayev Izzatillo","Malyakova Alfiya","Qambaraliyeva Ma'mura","Temirova Sanobar","Tillabayeva Aqida","Xolmatova To'lg'onoy"],
+  "38-Oilaviy poliklinika": ["Adasheva Xakima","Ermatova Zulfiya","Qaxxorova Saida","Xusanova Mashxura","Zayniddinova Malika"],
+  "39-Oilaviy poliklinika": ["Dexkanova L.K","Djurayeva M.T","Kamolov J. B","Tursunova M.X","Xamrayeva O.A"],
+  "40-Oilaviy poliklinika": ["Isomiddinova Otabek","Raxmatullayeva Gulchexra","Xasanova Mukaddas","Yusupova Sarvinoz"],
+  "41-Oilaviy poliklinika": ["Adasheva Ozodaxon","Madraximova Xamidaxon","Qayumov Axmadjon","Tadjibaeva Azizaxon","Tojiboeva Tojixon","Tojiboyeva Aziza"],
+  "42-Oilaviy poliklinika": ["Djurayeva Gulbaxor","Xalilova Z"],
+  "Baxt OShP": ["Fozilova Odinaxon","Qurbonov Axmadjon","To'lashev Yaxyo"],
+  "Ko'g'ay o'lmas OShP": ["Akramova Zamira","Axmadjonova Feruza","Ermatova Zubayda","Koraboyeva Xulkaroy"],
+  "Yangi hayot OShP": ["Atamirzayeva Baxrinisa","Botirov Muxabbat","Otamirzayeva Anvar","Yusupova Inoyat"],
+  "Katta chek OShP": ["Stambekov Muxammadqodir","Yusupjanova Ra'noxon"],
+  "Jalolobod OShP": ["MAXKAMBOYEVA N","Toshbayeva Muqaddas","Toshxo'jayeva S"],
+  "Yangiyer-2 OShP": ["Ataxanova Farida","Iskandarova Nozima"],
+  "Yangiobod OShP": ["Matmusayeva Shamihon O'ktamovna","Qo'ziyeva Maloxat","Umurzaqov Abduqodir Ismanovich"],
+  "Paxtachi OShP": ["M Xakimova","Umarov Abdulxamid"],
+  "Kuchkor ota OShP": ["Isakov Azizbek","Isomiddinov Otabek","Xasanova Mukaddas"],
+  "Qo'g'ay KTMP": ["Abdullayeva Gulnora","Jabborova Rushana","Muxammadiyev Hadicha","Muxammadiyeva Hadicha","Yo'ldashev Farrux"],
+  "Qo'g'ay bolalar KTMP": ["Abduxakimova Nodira","Toshbayeva Zuxra","Tursunova Nodira"]
+};
+
+function onMuassasaChange(val){
+  const inp = document.getElementById('oilaviyShifokor');
+  const list = document.getElementById('shifokorList');
+  if(!list) return;
+  list.innerHTML = '';
+  inp.value = '';
+  if(val && SHIFOKORLAR[val]){
+    SHIFOKORLAR[val].forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      list.appendChild(opt);
+    });
+  }
 }
 
 function toggleDaraja(prefix, checked){
