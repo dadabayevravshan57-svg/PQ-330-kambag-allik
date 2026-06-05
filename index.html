@@ -243,13 +243,22 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
             <option value="Statsionar">Statsionar</option>
           </select>
         </div>
-        <div id="statsionarDiv" style="display:none" class="f"><label>Statsionar darajasi</label>
-          <select id="statsionarDaraja">
-            <option value="">— Tanlang —</option>
-            <option value="Tuman darajasida">Tuman darajasida</option>
-            <option value="Viloyat darajasida">Viloyat darajasida</option>
-            <option value="Respublika darajasida">Respublika darajasida</option>
-          </select>
+        <div id="statsionarDiv" style="display:none;background:#fff3e0;border-radius:8px;padding:10px;margin-top:8px">
+          <div style="font-weight:600;color:#e65100;margin-bottom:8px;font-size:12px">📋 STATSIONAR DARAJASINI TANLANG:</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkDavTuman" style="width:16px;height:16px">
+              <span style="color:#e65100;font-weight:600">Tuman darajasida</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkDavViloyat" style="width:16px;height:16px">
+              <span style="color:#880e4f;font-weight:600">Viloyat darajasida</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkDavResp" style="width:16px;height:16px">
+              <span style="color:#283593;font-weight:600">Respublika darajasida</span>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -285,8 +294,27 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
       <!-- Statsionar sharoitda -->
       <div id="statsionarYordamDiv" style="display:none;margin-top:8px">
 
+        <!-- Daraja tanlash checkboxlar -->
+        <div style="background:#f5f5f5;border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="font-weight:600;color:#333;margin-bottom:10px;font-size:12px">📋 STATSIONAR DARAJASINI TANLANG:</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkTuman" onchange="toggleDaraja('tuman',this.checked)" style="width:16px;height:16px">
+              <span style="color:#e65100;font-weight:600">Tuman darajasida</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkViloyat" onchange="toggleDaraja('viloyat',this.checked)" style="width:16px;height:16px">
+              <span style="color:#880e4f;font-weight:600">Viloyat darajasida</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="chkResp" onchange="toggleDaraja('resp',this.checked)" style="width:16px;height:16px">
+              <span style="color:#283593;font-weight:600">Respublika darajasida</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Tuman darajasida -->
-        <div style="background:#fff8e1;border-radius:8px;padding:12px;margin-bottom:8px">
+        <div id="tumanDarajaDiv" style="display:none;background:#fff8e1;border-radius:8px;padding:12px;margin-bottom:8px">
           <div style="font-weight:600;color:#e65100;margin-bottom:8px;font-size:12px">🏥 TUMAN DARAJASIDA</div>
           <div class="grid">
             <div class="f"><label>Boshlangan sana</label><input type="date" id="tumanBoshlangan"></div>
@@ -302,7 +330,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         </div>
 
         <!-- Viloyat darajasida -->
-        <div style="background:#fce4ec;border-radius:8px;padding:12px;margin-bottom:8px">
+        <div id="viloyatDarajaDiv" style="display:none;background:#fce4ec;border-radius:8px;padding:12px;margin-bottom:8px">
           <div style="font-weight:600;color:#880e4f;margin-bottom:8px;font-size:12px">🏥 VILOYAT DARAJASIDA</div>
           <div class="grid">
             <div class="f"><label>Boshlangan sana</label><input type="date" id="viloyatBoshlangan"></div>
@@ -319,7 +347,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         </div>
 
         <!-- Respublika darajasida -->
-        <div style="background:#e8eaf6;border-radius:8px;padding:12px">
+        <div id="respDarajaDiv" style="display:none;background:#e8eaf6;border-radius:8px;padding:12px">
           <div style="font-weight:600;color:#283593;margin-bottom:8px;font-size:12px">🏥 RESPUBLIKA DARAJASIDA</div>
           <div class="grid">
             <div class="f"><label>Boshlangan sana</label><input type="date" id="respBoshlangan"></div>
@@ -533,7 +561,10 @@ async function saveRecord(){
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
     xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
-    davolash_rejasi:gv('davolashRejasi')||null, statsionar_daraja:gv('statsionarDaraja')||null,
+    davolash_rejasi:gv('davolashRejasi')||null,
+    dav_tuman: document.getElementById('chkDavTuman')?.checked ? 'Tuman darajasida' : null,
+    dav_viloyat: document.getElementById('chkDavViloyat')?.checked ? 'Viloyat darajasida' : null,
+    dav_resp: document.getElementById('chkDavResp')?.checked ? 'Respublika darajasida' : null,
     tibbiy_yordam:gv('tibbiyYordam')||null,
     davo_boshlangan:gv('davoBoshlangan')||null,
     davo_tugagan:gv('davoTugagan')||null,
@@ -564,10 +595,12 @@ async function saveRecord(){
 }
 
 function clearForm(){
-  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','statsionarDaraja','tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri','tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri','tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('statsionarDiv').style.display='none';
   document.getElementById('ambularDiv').style.display='none';
   document.getElementById('statsionarYordamDiv').style.display='none';
+  ['chkDavTuman','chkDavViloyat','chkDavResp','chkTuman','chkViloyat','chkResp'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  ['tumanDarajaDiv','viloyatDarajaDiv','respDarajaDiv'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
@@ -614,8 +647,9 @@ function editRecord(id){
   const rejaSel=document.getElementById('davolashRejasi');
   for(let i=0;i<rejaSel.options.length;i++){if(rejaSel.options[i].value===r.davolash_rejasi){rejaSel.selectedIndex=i;break;}}
   toggleStatsionar(r.davolash_rejasi||'');
-  const darajaSel=document.getElementById('statsionarDaraja');
-  for(let i=0;i<darajaSel.options.length;i++){if(darajaSel.options[i].value===r.statsionar_daraja){darajaSel.selectedIndex=i;break;}}
+  if(r.dav_tuman){const el=document.getElementById('chkDavTuman');if(el)el.checked=true;}
+  if(r.dav_viloyat){const el=document.getElementById('chkDavViloyat');if(el)el.checked=true;}
+  if(r.dav_resp){const el=document.getElementById('chkDavResp');if(el)el.checked=true;}
   const tibbiyYordamSel=document.getElementById('tibbiyYordam');
   for(let i=0;i<tibbiyYordamSel.options.length;i++){if(tibbiyYordamSel.options[i].value===r.tibbiy_yordam){tibbiyYordamSel.selectedIndex=i;break;}}
   toggleTibbiyYordam(r.tibbiy_yordam||'');
@@ -682,13 +716,26 @@ function toggleTibbiyYordam(val){
   }
 }
 
+function toggleDaraja(prefix, checked){
+  document.getElementById(prefix+'DarajaDiv').style.display = checked ? 'block' : 'none';
+  if(!checked){
+    [prefix+'Boshlangan', prefix+'Tugagan', prefix+'DavoTuri'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.value='';
+    });
+  }
+}
+
 function toggleStatsionar(val){
   const div = document.getElementById('statsionarDiv');
   if(val === 'Statsionar'){
     div.style.display = 'block';
   } else {
     div.style.display = 'none';
-    document.getElementById('statsionarDaraja').value = '';
+    ['chkDavTuman','chkDavViloyat','chkDavResp'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.checked=false;
+    });
   }
 }
 
@@ -844,9 +891,10 @@ async function exportExcel(){
     r.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari'?'+':'',
     r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':'',
     r.davolash_rejasi==='Ambulatoriya'?'+':'',
-    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Tuman darajasida')?'+':'',
-    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Viloyat darajasida')?'+':'',
-    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Respublika darajasida')?'+':'',
+    r.davolash_rejasi==='Statsionar'?'+':'',
+    r.dav_tuman?'+':'',
+    r.dav_viloyat?'+':'',
+    r.dav_resp?'+':'',
     r.tibbiy_yordam==='Ambulator sharoitda'?'+':'',
     r.tibbiy_yordam==='Statsionar sharoitda'?'+':'',
     r.davo_boshlangan?fd(r.davo_boshlangan):'',
