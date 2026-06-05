@@ -471,9 +471,11 @@ function showTab(t){
 }
 
 // EXCEL
-function exportExcel(){
+async function exportExcel(){
+  if(!allRecords.length){
+    await loadRecords();
+  }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
-  const wb=XLSX.utils.book_new();
   const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis"];
   const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'']);
   const wb=XLSX.utils.book_new();
@@ -490,6 +492,7 @@ function exportExcel(){
       ws[a].s={fill:{fgColor:{rgb:R%2===0?"EBF3FA":"FFFFFF"}}};
     }
   }
+  XLSX.utils.book_append_sheet(wb,ws,"Tibbiy Ko'rik");
   // Statistika varag'i
   const sh=["MFY","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol","Tashxis"];
   const sd=MFY_LIST.map(m=>{const tr=allRecords.filter(r=>r.mfy===m);return[m,tr.length,tr.filter(r=>r.korik_sana).length,tr.filter(r=>!r.korik_sana).length,tr.filter(r=>r.jinsi==='Erkak').length,tr.filter(r=>r.jinsi==='Ayol').length,tr.filter(r=>r.mkb10).length];});
