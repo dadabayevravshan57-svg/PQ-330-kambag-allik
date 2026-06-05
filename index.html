@@ -253,6 +253,89 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         </div>
       </div>
 
+      <!-- Ko'rsatilgan tibbiy yordam -->
+      <div class="section-title" style="margin:16px 0 8px;font-weight:600;color:#185FA5;font-size:13px">🏥 KO'RSATILGAN TIBBIY YORDAM</div>
+      <div class="grid">
+        <div class="f"><label>Ko'rsatilgan tibbiy yordam</label>
+          <select id="tibbiyYordam" onchange="toggleTibbiyYordam(this.value)">
+            <option value="">— Tanlang —</option>
+            <option value="Ambulator sharoitda">Ambulator sharoitda</option>
+            <option value="Statsionar sharoitda">Statsionar sharoitda</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ambulator sharoitda -->
+      <div id="ambularDiv" style="display:none;background:#f0f7ff;border-radius:8px;padding:12px;margin-top:8px">
+        <div style="font-weight:600;color:#1565c0;margin-bottom:8px;font-size:12px">🏠 AMBULATOR SHAROITDA</div>
+        <div class="grid">
+          <div class="f"><label>Boshlangan sana</label><input type="date" id="davoBoshlangan"></div>
+          <div class="f"><label>Tugagan sana</label><input type="date" id="davoTugagan"></div>
+          <div class="f"><label>Turi</label>
+            <select id="ambularTuri">
+              <option value="">— Tanlang —</option>
+              <option value="Uy">Uy</option>
+              <option value="Kunduzgi statsionar sharoitda">Kunduzgi statsionar sharoitda</option>
+              <option value="Ambulator tavsiya asosida">Ambulator tavsiya asosida</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statsionar sharoitda -->
+      <div id="statsionarYordamDiv" style="display:none;margin-top:8px">
+
+        <!-- Tuman darajasida -->
+        <div style="background:#fff8e1;border-radius:8px;padding:12px;margin-bottom:8px">
+          <div style="font-weight:600;color:#e65100;margin-bottom:8px;font-size:12px">🏥 TUMAN DARAJASIDA</div>
+          <div class="grid">
+            <div class="f"><label>Boshlangan sana</label><input type="date" id="tumanBoshlangan"></div>
+            <div class="f"><label>Tugagan sana</label><input type="date" id="tumanTugagan"></div>
+            <div class="f"><label>Davolash turi</label>
+              <select id="tumanDavoTuri">
+                <option value="">— Tanlang —</option>
+                <option value="Konservativ">Konservativ</option>
+                <option value="Jarrohlik">Jarrohlik</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Viloyat darajasida -->
+        <div style="background:#fce4ec;border-radius:8px;padding:12px;margin-bottom:8px">
+          <div style="font-weight:600;color:#880e4f;margin-bottom:8px;font-size:12px">🏥 VILOYAT DARAJASIDA</div>
+          <div class="grid">
+            <div class="f"><label>Boshlangan sana</label><input type="date" id="viloyatBoshlangan"></div>
+            <div class="f"><label>Tugagan sana</label><input type="date" id="viloyatTugagan"></div>
+            <div class="f"><label>Davolash turi</label>
+              <select id="viloyatDavoTuri">
+                <option value="">— Tanlang —</option>
+                <option value="Konservativ">Konservativ</option>
+                <option value="Jarrohlik">Jarrohlik</option>
+                <option value="Yuqori texnologik">Yuqori texnologik</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Respublika darajasida -->
+        <div style="background:#e8eaf6;border-radius:8px;padding:12px">
+          <div style="font-weight:600;color:#283593;margin-bottom:8px;font-size:12px">🏥 RESPUBLIKA DARAJASIDA</div>
+          <div class="grid">
+            <div class="f"><label>Boshlangan sana</label><input type="date" id="respBoshlangan"></div>
+            <div class="f"><label>Tugagan sana</label><input type="date" id="respTugagan"></div>
+            <div class="f"><label>Davolash turi</label>
+              <select id="respDavoTuri">
+                <option value="">— Tanlang —</option>
+                <option value="Konservativ">Konservativ</option>
+                <option value="Yuqori texnologik jarrohlik">Yuqori texnologik jarrohlik</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="actions">
         <button class="btn-clear" onclick="clearForm()">🔄 Tozalash</button>
         <button class="btn-save" id="saveBtn" onclick="saveRecord()">💾 Saqlash</button> <button id="cancelEditBtn" style="display:none;background:#95a5a6;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:14px" onclick="cancelEdit()">✖ Bekor qilish</button>
@@ -450,7 +533,14 @@ async function saveRecord(){
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
     xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
-    davolash_rejasi:gv('davolashRejasi')||null, statsionar_daraja:gv('statsionarDaraja')||null
+    davolash_rejasi:gv('davolashRejasi')||null, statsionar_daraja:gv('statsionarDaraja')||null,
+    tibbiy_yordam:gv('tibbiyYordam')||null,
+    davo_boshlangan:gv('davoBoshlangan')||null,
+    davo_tugagan:gv('davoTugagan')||null,
+    ambular_turi:gv('ambularTuri')||null,
+    tuman_boshlangan:gv('tumanBoshlangan')||null, tuman_tugagan:gv('tumanTugagan')||null, tuman_davo_turi:gv('tumanDavoTuri')||null,
+    viloyat_boshlangan:gv('viloyatBoshlangan')||null, viloyat_tugagan:gv('viloyatTugagan')||null, viloyat_davo_turi:gv('viloyatDavoTuri')||null,
+    resp_boshlangan:gv('respBoshlangan')||null, resp_tugagan:gv('respTugagan')||null, resp_davo_turi:gv('respDavoTuri')||null
   };
 
   if(editId){
@@ -474,8 +564,10 @@ async function saveRecord(){
 }
 
 function clearForm(){
-  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','statsionarDaraja'].forEach(id=>document.getElementById(id).value='');
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi','statsionarDaraja','tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri','tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('statsionarDiv').style.display='none';
+  document.getElementById('ambularDiv').style.display='none';
+  document.getElementById('statsionarYordamDiv').style.display='none';
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
@@ -524,6 +616,25 @@ function editRecord(id){
   toggleStatsionar(r.davolash_rejasi||'');
   const darajaSel=document.getElementById('statsionarDaraja');
   for(let i=0;i<darajaSel.options.length;i++){if(darajaSel.options[i].value===r.statsionar_daraja){darajaSel.selectedIndex=i;break;}}
+  const tibbiyYordamSel=document.getElementById('tibbiyYordam');
+  for(let i=0;i<tibbiyYordamSel.options.length;i++){if(tibbiyYordamSel.options[i].value===r.tibbiy_yordam){tibbiyYordamSel.selectedIndex=i;break;}}
+  toggleTibbiyYordam(r.tibbiy_yordam||'');
+  document.getElementById('davoBoshlangan').value=r.davo_boshlangan||'';
+  document.getElementById('davoTugagan').value=r.davo_tugagan||'';
+  const ambularTuriSel=document.getElementById('ambularTuri');
+  for(let i=0;i<ambularTuriSel.options.length;i++){if(ambularTuriSel.options[i].value===r.ambular_turi){ambularTuriSel.selectedIndex=i;break;}}
+  document.getElementById('tumanBoshlangan').value=r.tuman_boshlangan||'';
+  document.getElementById('tumanTugagan').value=r.tuman_tugagan||'';
+  const tumanSel=document.getElementById('tumanDavoTuri');
+  for(let i=0;i<tumanSel.options.length;i++){if(tumanSel.options[i].value===r.tuman_davo_turi){tumanSel.selectedIndex=i;break;}}
+  document.getElementById('viloyatBoshlangan').value=r.viloyat_boshlangan||'';
+  document.getElementById('viloyatTugagan').value=r.viloyat_tugagan||'';
+  const viloyatSel=document.getElementById('viloyatDavoTuri');
+  for(let i=0;i<viloyatSel.options.length;i++){if(viloyatSel.options[i].value===r.viloyat_davo_turi){viloyatSel.selectedIndex=i;break;}}
+  document.getElementById('respBoshlangan').value=r.resp_boshlangan||'';
+  document.getElementById('respTugagan').value=r.resp_tugagan||'';
+  const respSel=document.getElementById('respDavoTuri');
+  for(let i=0;i<respSel.options.length;i++){if(respSel.options[i].value===r.resp_davo_turi){respSel.selectedIndex=i;break;}}
   // Switch to form tab
   document.querySelector('.tab').click();
   // Mark as editing
@@ -558,6 +669,17 @@ async function deleteAll(){
   await sb.from('bemorlar').delete().neq('id','00000000-0000-0000-0000-000000000000');
   await loadRecords();
   showAlert('Barcha ma\'lumotlar o\'chirildi','ok');
+}
+
+function toggleTibbiyYordam(val){
+  document.getElementById('ambularDiv').style.display = val==='Ambulator sharoitda'?'block':'none';
+  document.getElementById('statsionarYordamDiv').style.display = val==='Statsionar sharoitda'?'block':'none';
+  if(val !== 'Ambulator sharoitda'){
+    ['davoBoshlangan','davoTugagan','ambularTuri'].forEach(id=>document.getElementById(id).value='');
+  }
+  if(val !== 'Statsionar sharoitda'){
+    ['tumanBoshlangan','tumanTugagan','tumanDavoTuri','viloyatBoshlangan','viloyatTugagan','viloyatDavoTuri','respBoshlangan','respTugagan','respDavoTuri'].forEach(id=>document.getElementById(id).value='');
+  }
 }
 
 function toggleStatsionar(val){
@@ -703,7 +825,10 @@ async function exportExcel(){
     await loadRecords();
   }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
-  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)','Ambulatoriya (+/-)','Statsionar: Tuman darajasida (+/-)','Statsionar: Viloyat darajasida (+/-)','Statsionar: Respublika darajasida (+/-)'];
+  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)','Ambulatoriya (+/-)','Statsionar: Tuman darajasida (+/-)','Statsionar: Viloyat darajasida (+/-)','Ambulator sharoitda (+/-)','Ambulator boshlangan sana','Ambulator tugagan sana','Uy (+/-)','Kunduzgi statsionar (+/-)','Ambulator tavsiya (+/-)','Statsionar sharoitda (+/-)',
+    'Tuman: Boshlangan sana','Tuman: Tugagan sana','Tuman: Konservativ (+/-)','Tuman: Jarrohlik (+/-)',
+    'Viloyat: Boshlangan sana','Viloyat: Tugagan sana','Viloyat: Konservativ (+/-)','Viloyat: Jarrohlik (+/-)','Viloyat: Yuqori texnologik (+/-)',
+    'Respublika: Boshlangan sana','Respublika: Tugagan sana','Respublika: Konservativ (+/-)','Respublika: Yuqori texnologik jarrohlik (+/-)'];
   const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
     r.xavf_guruhi==='1'?'+':'',
     r.xavf_guruhi==='2'?'+':'',
@@ -721,7 +846,31 @@ async function exportExcel(){
     r.davolash_rejasi==='Ambulatoriya'?'+':'',
     (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Tuman darajasida')?'+':'',
     (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Viloyat darajasida')?'+':'',
-    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Respublika darajasida')?'+':''
+    (r.davolash_rejasi==='Statsionar'&&r.statsionar_daraja==='Respublika darajasida')?'+':'',
+    r.tibbiy_yordam==='Ambulator sharoitda'?'+':'',
+    r.tibbiy_yordam==='Statsionar sharoitda'?'+':'',
+    r.davo_boshlangan?fd(r.davo_boshlangan):'',
+    r.davo_tugagan?fd(r.davo_tugagan):'',
+    r.tibbiy_yordam==='Ambulator sharoitda'?'+':'',
+    r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_boshlangan?fd(r.davo_boshlangan):'',
+    r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_tugagan?fd(r.davo_tugagan):'',
+    r.ambular_turi==='Uy'?'+':'',
+    r.ambular_turi==='Kunduzgi statsionar sharoitda'?'+':'',
+    r.ambular_turi==='Ambulator tavsiya asosida'?'+':'',
+    r.tibbiy_yordam==='Statsionar sharoitda'?'+':'',
+    r.tuman_boshlangan?fd(r.tuman_boshlangan):'',
+    r.tuman_tugagan?fd(r.tuman_tugagan):'',
+    r.tuman_davo_turi==='Konservativ'?'+':'',
+    r.tuman_davo_turi==='Jarrohlik'?'+':'',
+    r.viloyat_boshlangan?fd(r.viloyat_boshlangan):'',
+    r.viloyat_tugagan?fd(r.viloyat_tugagan):'',
+    r.viloyat_davo_turi==='Konservativ'?'+':'',
+    r.viloyat_davo_turi==='Jarrohlik'?'+':'',
+    r.viloyat_davo_turi==='Yuqori texnologik'?'+':'',
+    r.resp_boshlangan?fd(r.resp_boshlangan):'',
+    r.resp_tugagan?fd(r.resp_tugagan):'',
+    r.resp_davo_turi==='Konservativ'?'+':'',
+    r.resp_davo_turi==='Yuqori texnologik jarrohlik'?'+':''
   ]);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
