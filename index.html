@@ -1056,9 +1056,11 @@ async function exportExcel(){
   const r2vals = [];
   const r3vals = [];
 
-  // Asosiy (0-15)
-  for(let i=0;i<16;i++){r0vals.push('');r1vals.push('');r2vals.push('');}
-  r3vals.push('№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Oilaviy shifokor F.I.Sh","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis");
+  // Asosiy (0-16) - R1 da sarlavha, R2-R4 bo'sh
+  const asosiyLabels = ['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR',"Tug'ilgan sana",'Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Oilaviy shifokor F.I.Sh","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis"];
+  asosiyLabels.forEach(h=>{r0vals.push(h);r1vals.push('');r2vals.push('');r3vals.push('');});
+  // R1:R4 merge for each asosiy column
+
 
   // Xavf (16-19)
   r0vals.push('Tasnif xavf guruhi','','','');
@@ -1096,14 +1098,29 @@ async function exportExcel(){
   r2vals.push('Tuman darajasida','','','','Viloyat darajasida','','','','','Respublika darajasida','','','');
   r3vals.push('Boshlangan','Tugagan','Konservativ (+/-)','Jarrohlik (+/-)','Boshlangan','Tugagan','Konservativ (+/-)','Jarrohlik (+/-)','Yuqori texnologik (+/-)','Boshlangan','Tugagan','Konservativ (+/-)','Yuqori texnologik jarrohlik (+/-)');
 
-  const rows = [r0vals, r1vals, r2vals, r3vals];
-  rows.forEach((rv, ri) => {
+  // Asosiy (A-Q) ustunlar faqat 1-qatorda chiqadi, qolgan 3 qator ular uchun bo'sh
+  // Xavf, holat, kasallik, davolash, tibbiy yordam - 4 qatorli tuzilmada
+  
+  // 1-qator sarlavhalar: asosiy + guruh nomlari
+  const headerRow1 = [...r0vals];
+  // 2-qator: asosiy uchun bo'sh, guruhlar uchun 2-darajali
+  const headerRow2 = asosiyLabels.map(()=>'').concat(r1vals.slice(asosiyLabels.length));
+  // 3-qator
+  const headerRow3 = asosiyLabels.map(()=>'').concat(r2vals.slice(asosiyLabels.length));
+  // 4-qator
+  const headerRow4 = asosiyLabels.map(()=>'').concat(r3vals.slice(asosiyLabels.length));
+
+  [[headerRow1,0],[headerRow2,1],[headerRow3,2],[headerRow4,3]].forEach(([rv,ri])=>{
     const row = ws.addRow(rv);
     applyRow(row, hdrStyle(hColors[ri]));
     row.height = ri===3 ? 55 : 35;
   });
 
   // ============ MERGE CELLS (aniq tartib) ============
+  // Asosiy ustunlar: har biri R1:R4 merge (1-17 ustun)
+  for(let c=1; c<=17; c++){
+    try{ ws.mergeCells(1,c,4,c); } catch(e){}
+  }
   // Ustun joylashuvi:
   // 1-16: Asosiy, 17-20: Xavf(4), 21-22: Holat(2), 23-29: Kasallik(7)
   // 30-33: Davolash(4): 30=Ambul, 31-33=Stats(Tuman,Viloyat,Resp)
