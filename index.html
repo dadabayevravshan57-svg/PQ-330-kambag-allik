@@ -81,6 +81,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
 .bw{background:#fef9e7;color:#d4ac0d}
 .bd{background:#d5f5e3;color:#1e8449}
 .btn-del{background:transparent;color:#c0392b;border:1px solid #f1948a;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer}
+.btn-edit{background:transparent;color:#1565c0;border:1px solid #90caf9;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px}
 .empty{text-align:center;padding:3rem;color:#aaa;font-size:14px}
 .info-box{background:#eaf4fb;border:1px solid #aed6f1;border-radius:8px;padding:.85rem 1rem;font-size:13px;color:#1a5276;margin-bottom:1rem;font-weight:500}
 .pass-hint{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:.85rem 1rem;font-size:13px;color:#5d4037;margin-top:1rem}
@@ -198,7 +199,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
 
       <div class="actions">
         <button class="btn-clear" onclick="clearForm()">🔄 Tozalash</button>
-        <button class="btn-save" onclick="saveRecord()">💾 Saqlash</button>
+        <button class="btn-save" id="saveBtn" onclick="saveRecord()">💾 Saqlash</button> <button id="cancelEditBtn" style="display:none;background:#95a5a6;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:14px" onclick="cancelEdit()">✖ Bekor qilish</button>
       </div>
     </div>
   </div>
@@ -219,7 +220,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         <thead><tr>
           <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
           <th>Yoshi</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
-          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th id="delCol"></th>
+          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th id="delCol">Amallar</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
       </table>
@@ -327,7 +328,7 @@ function initApp(){
       btn.onclick=()=>showTab('admin');
       tabs.appendChild(btn);
     }
-    document.getElementById('delCol').textContent='O\'chirish';
+    // Actions column always visible
   } else {
     badge.textContent='👤 Xodim';
   }
@@ -381,8 +382,9 @@ async function saveRecord(){
     if(!gv(f)){showAlert('Majburiy maydonni to\'ldiring!','err');document.getElementById(f).focus();return;}
   }
   if(gv('jshshir').length!==14){showAlert('JSHSHIR 14 ta raqamdan iborat bo\'lishi kerak!','err');return;}
-  const dup=allRecords.find(r=>r.jshshir===gv('jshshir'));
-  if(dup){showAlert(`⚠️ Bu JSHSHIR allaqachon mavjud: ${dup.familya} ${dup.ism}`,'err');return;}
+
+  const saveBtn = document.getElementById('saveBtn');
+  const editId = saveBtn.dataset.editId;
 
   const rec={
     viloyat:'Namangan viloyati', tuman:"Uchqo'rg'on tumani",
@@ -391,9 +393,23 @@ async function saveRecord(){
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null
   };
-  const {error}=await sb.from('bemorlar').insert([rec]);
-  if(error){showAlert('Xatolik: '+error.message,'err');return;}
-  showAlert('✅ Bemor ma\'lumoti muvaffaqiyatli saqlandi!','ok');
+
+  if(editId){
+    // UPDATE mode
+    const {error}=await sb.from('bemorlar').update(rec).eq('id',editId);
+    if(error){showAlert('Xatolik: '+error.message,'err');return;}
+    showAlert('✅ Ma\'lumot muvaffaqiyatli yangilandi!','ok');
+    delete saveBtn.dataset.editId;
+    saveBtn.textContent='💾 Saqlash';
+    saveBtn.style.background='';
+  } else {
+    // INSERT mode - check duplicate
+    const dup=allRecords.find(r=>r.jshshir===gv('jshshir'));
+    if(dup){showAlert(`⚠️ Bu JSHSHIR allaqachon mavjud: ${dup.familya} ${dup.ism}`,'err');return;}
+    const {error}=await sb.from('bemorlar').insert([rec]);
+    if(error){showAlert('Xatolik: '+error.message,'err');return;}
+    showAlert('✅ Bemor ma\'lumoti muvaffaqiyatli saqlandi!','ok');
+  }
   clearForm();
   await loadRecords();
 }
@@ -402,6 +418,56 @@ function clearForm(){
   ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
+}
+
+function editRecord(id){
+  const r = allRecords.find(x=>x.id===id);
+  if(!r) return;
+  // Fill form fields
+  const mfySel = document.getElementById('mfy');
+  for(let i=0;i<mfySel.options.length;i++){
+    if(mfySel.options[i].value===r.mfy){mfySel.selectedIndex=i;break;}
+  }
+  document.getElementById('familya').value = r.familya||'';
+  document.getElementById('ism').value = r.ism||'';
+  document.getElementById('sharif').value = r.sharif||'';
+  document.getElementById('jshshir').value = r.jshshir||'';
+  document.getElementById('yosh').value = r.yosh||'';
+  const jinSel = document.getElementById('jinsi');
+  for(let i=0;i<jinSel.options.length;i++){
+    if(jinSel.options[i].value===r.jinsi){jinSel.selectedIndex=i;break;}
+  }
+  document.getElementById('oila').value = r.oila||'';
+  const muaSel = document.getElementById('muassasa');
+  for(let i=0;i<muaSel.options.length;i++){
+    if(muaSel.options[i].value===r.muassasa){muaSel.selectedIndex=i;break;}
+  }
+  const rejaOySel = document.getElementById('rejaOy');
+  for(let i=0;i<rejaOySel.options.length;i++){
+    if(rejaOySel.options[i].value===r.reja_oy){rejaOySel.selectedIndex=i;break;}
+  }
+  document.getElementById('korikSana').value = r.korik_sana||'';
+  document.getElementById('mkb10').value = r.mkb10||'';
+  document.getElementById('tashxis').value = r.tashxis||'';
+  // Switch to form tab
+  document.querySelector('.tab').click();
+  // Mark as editing
+  document.getElementById('saveBtn').dataset.editId = id;
+  document.getElementById('saveBtn').textContent = '💾 Saqlash (tahrirlash)';
+  document.getElementById('saveBtn').style.background = '#e67e22';
+  showAlert('Tahrirlash rejimi: ma\'lumotlarni o\'zgartiring va saqlang','ok');
+  document.getElementById('cancelEditBtn').style.display='inline-block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEdit(){
+  const saveBtn=document.getElementById('saveBtn');
+  delete saveBtn.dataset.editId;
+  saveBtn.textContent='💾 Saqlash';
+  saveBtn.style.background='';
+  document.getElementById('cancelEditBtn').style.display='none';
+  clearForm();
+  showAlert('Tahrirlash bekor qilindi','ok');
 }
 
 async function deleteRecord(id){
@@ -444,7 +510,7 @@ function renderTable(){
       <td>${r.korik_sana?`<span class="badge bd">${fd(r.korik_sana)}</span>`:'<span class="badge bw">Kutilmoqda</span>'}</td>
       <td>${r.mkb10?`<span class="badge" style="background:#fef5e7;color:#d35400">${r.mkb10}</span>`:'—'}</td>
       <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${r.tashxis||'—'}</td>
-      <td>${currentRole==='admin'?`<button class="btn-del" onclick="deleteRecord('${r.id}')">🗑</button>`:''}</td>
+      <td style="white-space:nowrap"><button class="btn-edit" onclick="editRecord('${r.id}')">✏️ Tahrir</button> ${currentRole==='admin'?`<button class="btn-del" onclick="deleteRecord('${r.id}')">🗑</button>`:''}</td>
     </tr>`).join('');
 }
 
