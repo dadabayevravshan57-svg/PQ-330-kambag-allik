@@ -973,11 +973,25 @@ async function exportExcel(){
   // Sarlavha qatorlari ranglari
   const hColors = ['1565C0','1976D2','1E88E5','2196F3'];
   const range = XLSX.utils.decode_range(ws['!ref']);
+
+  const borderStyle = {
+    top:{style:'thin',color:{rgb:'000000'}},
+    bottom:{style:'thin',color:{rgb:'000000'}},
+    left:{style:'thin',color:{rgb:'000000'}},
+    right:{style:'thin',color:{rgb:'000000'}}
+  };
+
+  // Sarlavha qatorlari (0-3)
   for(let row=0; row<4; row++){
     for(let C=range.s.c; C<=range.e.c; C++){
       const a = XLSX.utils.encode_cell({r:row, c:C});
       if(!ws[a]) ws[a]={t:'s',v:''};
-      ws[a].s={font:{bold:true,color:{rgb:'FFFFFF'},sz:10},fill:{fgColor:{rgb:hColors[row]}},alignment:{horizontal:'center',vertical:'center',wrapText:true}};
+      ws[a].s={
+        font:{bold:true, color:{rgb:'FFFFFF'}, sz:11, name:'Times New Roman'},
+        fill:{fgColor:{rgb:hColors[row]}},
+        alignment:{horizontal:'center', vertical:'center', wrapText:true},
+        border: borderStyle
+      };
     }
   }
 
@@ -986,12 +1000,17 @@ async function exportExcel(){
     for(let C=range.s.c; C<=range.e.c; C++){
       const a=XLSX.utils.encode_cell({r:R,c:C});
       if(!ws[a]) ws[a]={t:'s',v:''};
-      ws[a].s={fill:{fgColor:{rgb:R%2===0?'EBF3FA':'FFFFFF'}},alignment:{horizontal:'center'}};
+      ws[a].s={
+        font:{sz:11, name:'Times New Roman'},
+        fill:{fgColor:{rgb:R%2===0?'EBF3FA':'FFFFFF'}},
+        alignment:{horizontal:'center', vertical:'center', wrapText:true},
+        border: borderStyle
+      };
     }
   }
 
   // Qator balandliklar
-  ws['!rows'] = [{hpt:30},{hpt:30},{hpt:35},{hpt:50}];
+  ws['!rows'] = [{hpt:35},{hpt:35},{hpt:40},{hpt:55}];
 
   XLSX.utils.book_append_sheet(wb, ws, "Tibbiy Ko'rik");
   // Statistika varag'i
@@ -1000,6 +1019,20 @@ async function exportExcel(){
   sd.push(['JAMI',allRecords.length,allRecords.filter(r=>r.korik_sana).length,allRecords.filter(r=>!r.korik_sana).length,allRecords.filter(r=>r.jinsi==='Erkak').length,allRecords.filter(r=>r.jinsi==='Ayol').length,allRecords.filter(r=>r.mkb10).length]);
   const ws2=XLSX.utils.aoa_to_sheet([sh,...sd]);
   ws2['!cols']=[{wch:22},{wch:8},{wch:18},{wch:14},{wch:8},{wch:8},{wch:10}];
+  const range2=XLSX.utils.decode_range(ws2['!ref']);
+  const brd2={top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}};
+  for(let R=0;R<=sd.length;R++){
+    for(let C=range2.s.c;C<=range2.e.c;C++){
+      const a=XLSX.utils.encode_cell({r:R,c:C});
+      if(!ws2[a])ws2[a]={t:'s',v:''};
+      ws2[a].s={
+        font:{bold:R===0,sz:11,name:'Times New Roman',color:{rgb:R===0?'FFFFFF':'000000'}},
+        fill:{fgColor:{rgb:R===0?'185FA5':R%2===0?'EBF3FA':'FFFFFF'}},
+        alignment:{horizontal:'center',vertical:'center',wrapText:true},
+        border:brd2
+      };
+    }
+  }
   XLSX.utils.book_append_sheet(wb,ws2,"Statistika");
   const d=new Date();
   XLSX.writeFile(wb,`PQ330_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.xlsx`);
