@@ -1,9 +1,558 @@
-🏥
-PQ-330
-Uchqo'rg'on tumani tibbiy ko'rik tizimi
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PQ-330 — Tibbiy Ko'rik Tizimi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{background:#f0f4f8;min-height:100vh}
 
-👤 Xodim
-🔐 Admin
-Parol
-Parolni kiriting
-Kirish →
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0C447C,#185FA5)}
+.login-box{background:#fff;border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo .icon{font-size:48px;margin-bottom:.5rem}
+.login-logo h1{font-size:22px;color:#0C447C;font-weight:700}
+.login-logo p{font-size:13px;color:#888;margin-top:4px}
+.login-tabs{display:flex;gap:4px;background:#f0f4f8;padding:4px;border-radius:10px;margin-bottom:1.5rem}
+.ltab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#888;transition:all .15s}
+.ltab.active{background:#fff;color:#185FA5;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:12px;color:#666;font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fg input{width:100%;padding:11px 13px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none;transition:border .2s}
+.fg input:focus{border-color:#185FA5}
+.btn-login{width:100%;background:#185FA5;color:#fff;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.btn-login:hover{background:#0C447C}
+.login-err{color:#e74c3c;font-size:13px;text-align:center;margin-top:10px;padding:8px;background:#fdf2f2;border-radius:6px;display:none}
+
+/* APP */
+.app{display:none}
+.topbar{background:linear-gradient(135deg,#0C447C,#185FA5);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.topbar h1{color:#fff;font-size:15px;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-badge{background:rgba(255,255,255,.2);color:#fff;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.admin-badge{background:#f39c12;color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.btn-out{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+.tabs{display:flex;gap:4px;padding:.85rem 1.5rem .5rem;background:#fff;border-bottom:1px solid #e8e8e8;flex-wrap:wrap}
+.tab{padding:8px 16px;border:none;background:transparent;color:#888;cursor:pointer;border-radius:6px;font-size:13px;font-weight:500;transition:all .15s}
+.tab.active{background:#185FA5;color:#fff}
+.panel{display:none;padding:1.25rem 1.5rem}
+.panel.active{display:block}
+.card{background:#fff;border-radius:12px;padding:1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:1rem}
+.section-title{font-size:12px;font-weight:700;color:#555;margin:1rem 0 8px;padding-bottom:6px;border-bottom:2px solid #f0f0f0;text-transform:uppercase;letter-spacing:.5px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:10px;margin-bottom:10px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.full{grid-column:1/-1}
+.f label{font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.f input,.f select{padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;outline:none;transition:border .2s}
+.f input:focus,.f select:focus{border-color:#185FA5}
+.f input.cap{text-transform:capitalize}
+.f input.adate{border-color:#27ae60;background:#f0fff4}
+.hint{font-size:11px;color:#27ae60;margin-top:2px}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid #f0f0f0}
+.btn-save{background:#185FA5;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-save:hover{background:#0C447C}
+.btn-clear{background:#fff;color:#555;border:1.5px solid #ddd;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:1rem;display:none}
+.alert.ok{background:#d5f5e3;color:#1e8449;border:1px solid #a9dfbf;display:block}
+.alert.err{background:#fadbd8;color:#c0392b;border:1px solid #f1948a;display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
+.stat{background:#fff;border-radius:10px;padding:1rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.stat-n{font-size:28px;font-weight:700;color:#185FA5}
+.stat-l{font-size:12px;color:#888;margin-top:2px}
+.toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none}
+.toolbar input:focus{border-color:#185FA5}
+.toolbar select{padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none}
+.btn-excel{background:#1D6F42;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-excel:hover{background:#155232}
+.tbl-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:12px}
+thead th{background:#f8f9fa;padding:9px 10px;text-align:left;font-weight:700;color:#555;white-space:nowrap;border-bottom:2px solid #e8e8e8}
+tbody tr{border-bottom:1px solid #f0f0f0}
+tbody tr:hover{background:#f8fbff}
+tbody td{padding:8px 10px;color:#333;white-space:nowrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bm{background:#d5f5e3;color:#1e8449}
+.bf{background:#fde8f0;color:#c0392b}
+.bw{background:#fef9e7;color:#d4ac0d}
+.bd{background:#d5f5e3;color:#1e8449}
+.btn-del{background:transparent;color:#c0392b;border:1px solid #f1948a;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer}
+.empty{text-align:center;padding:3rem;color:#aaa;font-size:14px}
+.info-box{background:#eaf4fb;border:1px solid #aed6f1;border-radius:8px;padding:.85rem 1rem;font-size:13px;color:#1a5276;margin-bottom:1rem;font-weight:500}
+.pass-hint{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:.85rem 1rem;font-size:13px;color:#5d4037;margin-top:1rem}
+.pass-hint strong{display:block;margin-bottom:4px;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="icon">🏥</div>
+      <h1>PQ-330</h1>
+      <p>Uchqo'rg'on tumani tibbiy ko'rik tizimi</p>
+    </div>
+    <div class="login-tabs">
+      <button class="ltab active" onclick="setRole('xodim',this)">👤 Xodim</button>
+      <button class="ltab" onclick="setRole('admin',this)">🔐 Admin</button>
+    </div>
+    <div class="fg">
+      <label>Parol</label>
+      <input type="password" id="loginPass" placeholder="Parolni kiriting" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Kirish →</button>
+    <div class="login-err" id="loginErr">Parol noto'g'ri!</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appWrap">
+  <div class="topbar">
+    <h1>🏥 PQ-330 — Uchqo'rg'on tumani tibbiy ko'rik ro'yxatga olish tizimi</h1>
+    <div class="topbar-right">
+      <span id="roleBadge" class="user-badge">Xodim</span>
+      <button class="btn-out" onclick="doLogout()">🚪 Chiqish</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabsBar">
+    <button class="tab active" onclick="showTab('add')">➕ Yangi qo'shish</button>
+    <button class="tab" onclick="showTab('list')">📋 Ro'yxat</button>
+    <button class="tab" onclick="showTab('stats')">📊 Statistika</button>
+  </div>
+
+  <div id="alertBox" class="alert" style="margin:1rem 1.5rem 0"></div>
+
+  <!-- ADD -->
+  <div class="panel active" id="panel-add">
+    <div class="card">
+      <div class="section-title">📍 Joylashuv</div>
+      <div class="form-grid">
+        <div class="f"><label>Viloyat</label><select disabled><option>Namangan viloyati</option></select></div>
+        <div class="f"><label>Tuman</label><select disabled><option>Uchqo'rg'on tumani</option></select></div>
+        <div class="f">
+          <label>MFY *</label>
+          <select id="mfy">
+            <option value="">— Tanlang —</option>
+            <option>Chek</option><option>Ulug'bek</option><option>Yoshlik</option><option>Ko'g'ay</option><option>Islomobod</option><option>Uchyog'och</option><option>Navro'z</option><option>Nurobod</option><option>Namuna</option><option>Birlik</option><option>Shahrihonchek</option><option>Ko'g'ay o'lmas</option><option>Yorqinboychek</option><option>Bahriyobod</option><option>Obod</option><option>Ozod</option><option>Yangiobod</option><option>Norin</option><option>Navbahor</option><option>Istiqlol</option><option>Yopisxon</option><option>Katta Chek</option><option>Qozoqovul</option><option>Baxt</option><option>Xalfato'pi</option><option>Yashiq</option><option>Eshonto'pi</option><option>Atlas</option><option>Elatan</option><option>Ko'chaboshi</option><option>Yangiyer</option><option>Guliston</option><option>Bo'ston</option><option>Yog'du</option><option>Dehqonobod</option><option>Mehnatobod</option><option>Uchko'prik</option><option>Paxtachi</option><option>Qo'rg'oncha</option><option>Madaniyat</option><option>Ko'prikboshi</option><option>Qumto'g'on</option><option>Sohil</option><option>O'rdabog'</option><option>Turkiston</option><option>Yorqin hayot</option><option>Sanoat</option><option>Farg'ona</option><option>Shodlik</option><option>Fayziobod</option><option>Oqtovliq</option><option>Navoiy</option><option>Farovon</option><option>Sholdirma</option><option>Mustaqillik</option><option>Tegirmon</option><option>Kattamo'g'ol</option><option>Tinchlik</option><option>Istiqbol</option><option>Yangi hayot</option><option>Qurama</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">👤 Shaxsiy ma'lumotlar</div>
+      <div class="form-grid">
+        <div class="f"><label>Familya *</label><input id="familya" type="text" placeholder="Familya" class="cap" oninput="tc(this)"></div>
+        <div class="f"><label>Ism *</label><input id="ism" type="text" placeholder="Ism" class="cap" oninput="tc(this)"></div>
+        <div class="f"><label>Sharif *</label><input id="sharif" type="text" placeholder="Otasining ismi" class="cap" oninput="tc(this)"></div>
+        <div class="f"><label>JSHSHIR * (14 raqam)</label><input id="jshshir" type="text" placeholder="00000000000000" maxlength="14" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="f"><label>Yoshi *</label><input id="yosh" type="number" placeholder="0" min="0" max="120"></div>
+        <div class="f"><label>Jinsi *</label><select id="jinsi"><option value="">— Tanlang —</option><option>Erkak</option><option>Ayol</option></select></div>
+        <div class="f"><label>Oila a'zolari soni *</label>
+          <select id="oila">
+            <option value="">— Tanlang —</option>
+            <option value="1">1 kishi</option><option value="2">2 kishi</option><option value="3">3 kishi</option>
+            <option value="4">4 kishi</option><option value="5">5 kishi</option><option value="6">6 kishi</option>
+            <option value="7">7 kishi</option><option value="8">8 kishi</option><option value="9">9 kishi</option>
+          </select>
+        </div>
+        <div class="f"><label>Biriktirilgan muassasa *</label>
+          <select id="muassasa">
+            <option value="">— Tanlang —</option>
+            <option>Ko'p tarmoqli markaziy poliklinika</option>
+            <option>38-Oilaviy poliklinika</option><option>39-Oilaviy poliklinika</option>
+            <option>40-Oilaviy poliklinika</option><option>41-Oilaviy poliklinika</option>
+            <option>42-Oilaviy poliklinika</option>
+            <option>Baxt OShP</option><option>Kuchkor ota OShP</option>
+            <option>Yangi hayot OShP</option><option>Katta chek OShP</option>
+            <option>Ko'g'ay o'lmas OShP</option><option>Jalolobod OShP</option>
+            <option>Yangiyer-2 OShP</option><option>Yangiobod OShP</option>
+            <option>Paxtachi OShP</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">🩺 Tibbiy ko'rik</div>
+      <div class="form-grid">
+        <div class="f">
+          <label>Reja ko'rik oyi *</label>
+          <select id="rejaOy" onchange="autoDate()">
+            <option value="">— Tanlang —</option>
+            <option>Yanvar</option><option>Fevral</option><option>Mart</option><option>Aprel</option>
+            <option>May</option><option>Iyun</option><option>Iyul</option><option>Avgust</option>
+            <option>Sentabr</option><option>Oktabr</option><option>Noyabr</option><option>Dekabr</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>Ko'rik o'tkazilgan sana</label>
+          <input id="korikSana" type="date">
+          <span class="hint" id="dateHint"></span>
+        </div>
+        <div class="f"><label>MKB-10 kodi</label><input id="mkb10" type="text" placeholder="J45, I10..." oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="f full"><label>Tashxis</label><input id="tashxis" type="text" placeholder="Tashxis tavsifi (ixtiyoriy)"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-clear" onclick="clearForm()">🔄 Tozalash</button>
+        <button class="btn-save" onclick="saveRecord()">💾 Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST -->
+  <div class="panel" id="panel-list">
+    <div class="info-box" id="countBox">Yuklanmoqda...</div>
+    <div class="toolbar">
+      <input type="text" id="srch" placeholder="🔍 Familya, JSHSHIR, MFY..." oninput="renderTable()">
+      <select id="fltMfy" onchange="renderTable()">
+        <option value="">Barcha MFYlar</option>
+        <option>Chek</option><option>Ulug'bek</option><option>Yoshlik</option><option>Ko'g'ay</option><option>Islomobod</option><option>Uchyog'och</option><option>Navro'z</option><option>Nurobod</option><option>Namuna</option><option>Birlik</option><option>Shahrihonchek</option><option>Ko'g'ay o'lmas</option><option>Yorqinboychek</option><option>Bahriyobod</option><option>Obod</option><option>Ozod</option><option>Yangiobod</option><option>Norin</option><option>Navbahor</option><option>Istiqlol</option><option>Yopisxon</option><option>Katta Chek</option><option>Qozoqovul</option><option>Baxt</option><option>Xalfato'pi</option><option>Yashiq</option><option>Eshonto'pi</option><option>Atlas</option><option>Elatan</option><option>Ko'chaboshi</option><option>Yangiyer</option><option>Guliston</option><option>Bo'ston</option><option>Yog'du</option><option>Dehqonobod</option><option>Mehnatobod</option><option>Uchko'prik</option><option>Paxtachi</option><option>Qo'rg'oncha</option><option>Madaniyat</option><option>Ko'prikboshi</option><option>Qumto'g'on</option><option>Sohil</option><option>O'rdabog'</option><option>Turkiston</option><option>Yorqin hayot</option><option>Sanoat</option><option>Farg'ona</option><option>Shodlik</option><option>Fayziobod</option><option>Oqtovliq</option><option>Navoiy</option><option>Farovon</option><option>Sholdirma</option><option>Mustaqillik</option><option>Tegirmon</option><option>Kattamo'g'ol</option><option>Tinchlik</option><option>Istiqbol</option><option>Yangi hayot</option><option>Qurama</option>
+      </select>
+      <button class="btn-excel" onclick="exportExcel()">📥 Excel yuklab olish</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
+          <th>Yoshi</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
+          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th id="delCol"></th>
+        </tr></thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyMsg" style="display:none">📭 Hech qanday yozuv topilmadi</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="panel" id="panel-stats">
+    <div id="statsContent"></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="panel" id="panel-admin">
+    <div class="card">
+      <div class="section-title">🔐 Parollarni o'zgartirish</div>
+      <div class="form-grid">
+        <div class="f">
+          <label>Xodimlar paroli</label>
+          <input type="text" id="newXodimPass" placeholder="Yangi parol">
+        </div>
+        <div class="f">
+          <label>Admin paroli</label>
+          <input type="text" id="newAdminPass" placeholder="Yangi parol">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-save" onclick="savePasswords()">💾 Parollarni saqlash</button>
+      </div>
+      <div class="pass-hint" id="curPassBox">
+        <strong>📋 Hozirgi parollar:</strong>
+        <span id="passInfo">Yuklanmoqda...</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🗑️ Ma'lumotlarni boshqarish</div>
+      <p style="font-size:13px;color:#666;margin-bottom:1rem">Barcha yozuvlarni o'chirish (ehtiyot bo'ling!)</p>
+      <button class="btn-clear" style="border-color:#e74c3c;color:#e74c3c" onclick="deleteAll()">🗑️ Barcha ma'lumotlarni o'chirish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SURL = 'https://odqakxaxbeqnjabckhci.supabase.co';
+const SKEY = 'sb_publishable_QRiasrkkjMElDmwkAaYxzw_2FbtHU5Z';
+const sb = supabase.createClient(SURL, SKEY);
+
+const OY = {'Yanvar':'01','Fevral':'02','Mart':'03','Aprel':'04','May':'05','Iyun':'06','Iyul':'07','Avgust':'08','Sentabr':'09','Oktabr':'10','Noyabr':'11','Dekabr':'12'};
+const MFY_LIST = ["Chek","Ulug'bek","Yoshlik","Ko'g'ay","Islomobod","Uchyog'och","Navro'z","Nurobod","Namuna","Birlik","Shahrihonchek","Ko'g'ay o'lmas","Yorqinboychek","Bahriyobod","Obod","Ozod","Yangiobod","Norin","Navbahor","Istiqlol","Yopisxon","Katta Chek","Qozoqovul","Baxt","Xalfato'pi","Yashiq","Eshonto'pi","Atlas","Elatan","Ko'chaboshi","Yangiyer","Guliston","Bo'ston","Yog'du","Dehqonobod","Mehnatobod","Uchko'prik","Paxtachi","Qo'rg'oncha","Madaniyat","Ko'prikboshi","Qumto'g'on","Sohil","O'rdabog'","Turkiston","Yorqin hayot","Sanoat","Farg'ona","Shodlik","Fayziobod","Oqtovliq","Navoiy","Farovon","Sholdirma","Mustaqillik","Tegirmon","Kattamo'g'ol","Tinchlik","Istiqbol","Yangi hayot","Qurama"];
+
+let currentRole = '';
+let allRecords = [];
+let loginType = 'xodim';
+
+// Default parollar (Supabase da saqlanadi)
+let PASS_XODIM = 'tibbiy2026';
+let PASS_ADMIN = 'admin2026';
+
+function setRole(r, el){
+  loginType = r;
+  document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+
+async function doLogin(){
+  const pass = document.getElementById('loginPass').value;
+  // Parollarni Supabase dan olish
+  await loadPasswords();
+  const errEl = document.getElementById('loginErr');
+  if(loginType==='xodim' && pass===PASS_XODIM){
+    currentRole='xodim'; initApp();
+  } else if(loginType==='admin' && pass===PASS_ADMIN){
+    currentRole='admin'; initApp();
+  } else {
+    errEl.style.display='block';
+    setTimeout(()=>errEl.style.display='none',3000);
+  }
+}
+
+async function loadPasswords(){
+  const {data} = await sb.from('sozlamalar').select('*').in('kalit',['xodim_parol','admin_parol']);
+  if(data && data.length){
+    data.forEach(d=>{
+      if(d.kalit==='xodim_parol') PASS_XODIM=d.qiymat;
+      if(d.kalit==='admin_parol') PASS_ADMIN=d.qiymat;
+    });
+  }
+}
+
+function initApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('appWrap').style.display='block';
+  const badge = document.getElementById('roleBadge');
+  if(currentRole==='admin'){
+    badge.textContent='🔐 Admin';
+    badge.style.background='#f39c12';
+    // Admin tab qo'shish
+    const tabs = document.getElementById('tabsBar');
+    if(!document.getElementById('adminTabBtn')){
+      const btn = document.createElement('button');
+      btn.className='tab'; btn.id='adminTabBtn';
+      btn.textContent='⚙️ Admin panel';
+      btn.onclick=()=>showTab('admin');
+      tabs.appendChild(btn);
+    }
+    document.getElementById('delCol').textContent='O\'chirish';
+  } else {
+    badge.textContent='👤 Xodim';
+  }
+  loadRecords();
+}
+
+function doLogout(){
+  currentRole='';
+  allRecords=[];
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('appWrap').style.display='none';
+  document.getElementById('loginPass').value='';
+  showTab('add');
+}
+
+// RECORDS
+async function loadRecords(){
+  const {data,error} = await sb.from('bemorlar').select('*').order('created_at',{ascending:true});
+  if(!error) allRecords = data||[];
+  allRecords.forEach((r,i)=>r._idx=i+1);
+  renderTable();
+  updateCount();
+}
+
+function updateCount(){
+  const el=document.getElementById('countBox');
+  if(el) el.innerHTML=`📊 Jami: <strong>${allRecords.length}</strong> ta bemor &nbsp;|&nbsp; ✅ Ko'rik o'tkazildi: <strong>${allRecords.filter(r=>r.korik_sana).length}</strong> ta &nbsp;|&nbsp; ⏳ Kutilmoqda: <strong>${allRecords.filter(r=>!r.korik_sana).length}</strong> ta`;
+}
+
+function tc(el){
+  const p=el.selectionStart;
+  el.value=el.value.replace(/(^|[\s\-])([a-zA-ZʻʼÀ-ÿ\u0400-\u04FF])/g,(m,s,c)=>s+c.toUpperCase());
+  el.setSelectionRange(p,p);
+}
+
+function autoDate(){
+  const oy=document.getElementById('rejaOy').value;
+  const el=document.getElementById('korikSana');
+  const hint=document.getElementById('dateHint');
+  if(!oy){el.value='';el.classList.remove('adate');hint.textContent='';return;}
+  el.value=`2026-${OY[oy]}-01`;
+  el.classList.add('adate');
+  hint.textContent=`${oy} oyi avtomatik to'ldirildi — kunini o'zgartiring`;
+}
+
+function gv(id){return document.getElementById(id).value.trim();}
+
+async function saveRecord(){
+  const req=['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy'];
+  for(const f of req){
+    if(!gv(f)){showAlert('Majburiy maydonni to\'ldiring!','err');document.getElementById(f).focus();return;}
+  }
+  if(gv('jshshir').length!==14){showAlert('JSHSHIR 14 ta raqamdan iborat bo\'lishi kerak!','err');return;}
+  const dup=allRecords.find(r=>r.jshshir===gv('jshshir'));
+  if(dup){showAlert(`⚠️ Bu JSHSHIR allaqachon mavjud: ${dup.familya} ${dup.ism}`,'err');return;}
+
+  const rec={
+    viloyat:'Namangan viloyati', tuman:"Uchqo'rg'on tumani",
+    mfy:gv('mfy'), familya:gv('familya'), ism:gv('ism'), sharif:gv('sharif'),
+    jshshir:gv('jshshir'), yosh:parseInt(gv('yosh')), jinsi:gv('jinsi'),
+    oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
+    korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null
+  };
+  const {error}=await sb.from('bemorlar').insert([rec]);
+  if(error){showAlert('Xatolik: '+error.message,'err');return;}
+  showAlert('✅ Bemor ma\'lumoti muvaffaqiyatli saqlandi!','ok');
+  clearForm();
+  await loadRecords();
+}
+
+function clearForm(){
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('korikSana').classList.remove('adate');
+  document.getElementById('dateHint').textContent='';
+}
+
+async function deleteRecord(id){
+  if(!confirm('Bu yozuvni o\'chirishni tasdiqlaysizmi?'))return;
+  await sb.from('bemorlar').delete().eq('id',id);
+  await loadRecords();
+}
+
+async function deleteAll(){
+  if(currentRole!=='admin')return;
+  if(!confirm('⚠️ BARCHA ma\'lumotlarni o\'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo\'lmaydi!'))return;
+  if(!confirm('Ishonchingiz komilmi?'))return;
+  await sb.from('bemorlar').delete().neq('id','00000000-0000-0000-0000-000000000000');
+  await loadRecords();
+  showAlert('Barcha ma\'lumotlar o\'chirildi','ok');
+}
+
+function renderTable(){
+  const q=document.getElementById('srch').value.toLowerCase();
+  const fm=document.getElementById('fltMfy').value;
+  const body=document.getElementById('tblBody');
+  const empty=document.getElementById('emptyMsg');
+  const filtered=allRecords.filter(r=>{
+    const mQ=!q||[r.familya,r.ism,r.sharif,r.jshshir,r.mfy,r.mkb10,r.tashxis].join(' ').toLowerCase().includes(q);
+    return mQ&&(!fm||r.mfy===fm);
+  });
+  if(!filtered.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  body.innerHTML=filtered.map((r,i)=>`
+    <tr>
+      <td style="color:#aaa;font-size:11px">${i+1}</td>
+      <td>${r.mfy}</td>
+      <td><strong>${r.familya} ${r.ism}</strong><br><span style="color:#aaa;font-size:11px">${r.sharif}</span></td>
+      <td style="font-family:monospace;font-size:11px">${r.jshshir}</td>
+      <td>${r.yosh}</td>
+      <td><span class="badge ${r.jinsi==='Erkak'?'bm':'bf'}">${r.jinsi}</span></td>
+      <td style="text-align:center">${r.oila}</td>
+      <td style="font-size:11px">${r.muassasa}</td>
+      <td>${r.reja_oy}</td>
+      <td>${r.korik_sana?`<span class="badge bd">${fd(r.korik_sana)}</span>`:'<span class="badge bw">Kutilmoqda</span>'}</td>
+      <td>${r.mkb10?`<span class="badge" style="background:#fef5e7;color:#d35400">${r.mkb10}</span>`:'—'}</td>
+      <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${r.tashxis||'—'}</td>
+      <td>${currentRole==='admin'?`<button class="btn-del" onclick="deleteRecord('${r.id}')">🗑</button>`:''}</td>
+    </tr>`).join('');
+}
+
+function fd(d){if(!d)return'';const p=d.split('-');return p.length===3?`${p[2]}.${p[1]}.${p[0]}`:d;}
+
+function showAlert(msg,type){
+  const el=document.getElementById('alertBox');
+  el.textContent=msg;el.className='alert '+type;el.style.display='block';
+  setTimeout(()=>{el.style.display='none';el.className='alert';},4000);
+}
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>{if(b.id==='adminTabBtn'&&t==='admin') b.classList.add('active');});
+  const tnames=['add','list','stats'];
+  const idx=tnames.indexOf(t);
+  if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  const panel=document.getElementById('panel-'+t);
+  if(panel) panel.classList.add('active');
+  if(t==='list') loadRecords();
+  if(t==='stats') renderStats();
+  if(t==='admin') showAdminPanel();
+}
+
+// EXCEL
+function exportExcel(){
+  if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
+  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis"];
+  const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'']);
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
+  ws['!cols']=[{wch:5},{wch:20},{wch:20},{wch:18},{wch:16},{wch:14},{wch:16},{wch:16},{wch:7},{wch:8},{wch:18},{wch:30},{wch:16},{wch:20},{wch:12},{wch:30}];
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let C=range.s.c;C<=range.e.c;C++){
+    const a=XLSX.utils.encode_cell({r:0,c:C});if(!ws[a])continue;
+    ws[a].s={font:{bold:true,color:{rgb:"FFFFFF"},sz:11},fill:{fgColor:{rgb:"185FA5"}},alignment:{horizontal:"center"}};
+  }
+  for(let R=1;R<=data.length;R++){
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const a=XLSX.utils.encode_cell({r:R,c:C});if(!ws[a])ws[a]={t:'s',v:''};
+      ws[a].s={fill:{fgColor:{rgb:R%2===0?"EBF3FA":"FFFFFF"}}};
+    }
+  }
+  // Statistika varag'i
+  const sh=["MFY","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol","Tashxis"];
+  const sd=MFY_LIST.map(m=>{const tr=allRecords.filter(r=>r.mfy===m);return[m,tr.length,tr.filter(r=>r.korik_sana).length,tr.filter(r=>!r.korik_sana).length,tr.filter(r=>r.jinsi==='Erkak').length,tr.filter(r=>r.jinsi==='Ayol').length,tr.filter(r=>r.mkb10).length];});
+  sd.push(['JAMI',allRecords.length,allRecords.filter(r=>r.korik_sana).length,allRecords.filter(r=>!r.korik_sana).length,allRecords.filter(r=>r.jinsi==='Erkak').length,allRecords.filter(r=>r.jinsi==='Ayol').length,allRecords.filter(r=>r.mkb10).length]);
+  const ws2=XLSX.utils.aoa_to_sheet([sh,...sd]);
+  ws2['!cols']=[{wch:22},{wch:8},{wch:18},{wch:14},{wch:8},{wch:8},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws2,"Statistika");
+  const d=new Date();
+  XLSX.writeFile(wb,`PQ330_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.xlsx`);
+}
+
+// STATS
+function renderStats(){
+  const tot=allRecords.length;
+  const otk=allRecords.filter(r=>r.korik_sana).length;
+  const erk=allRecords.filter(r=>r.jinsi==='Erkak').length;
+  const ayl=allRecords.filter(r=>r.jinsi==='Ayol').length;
+  const mkb=allRecords.filter(r=>r.mkb10).length;
+  const mx=Math.max(...MFY_LIST.map(m=>allRecords.filter(r=>r.mfy===m).length),1);
+  const rows=MFY_LIST.map(m=>{
+    const c=allRecords.filter(r=>r.mfy===m).length;
+    return`<tr><td style="font-size:12px">${m}</td><td style="text-align:center;font-weight:700">${c}</td><td style="text-align:center">${allRecords.filter(r=>r.mfy===m&&r.korik_sana).length}</td><td style="min-width:80px"><div style="background:#f0f0f0;border-radius:4px;height:7px"><div style="background:#185FA5;height:7px;border-radius:4px;width:${Math.round(c/mx*100)}%"></div></div></td></tr>`;
+  }).join('');
+  document.getElementById('statsContent').innerHTML=`
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-n">${tot}</div><div class="stat-l">Jami</div></div>
+      <div class="stat"><div class="stat-n" style="color:#27ae60">${otk}</div><div class="stat-l">Ko'rik o'tkazildi</div></div>
+      <div class="stat"><div class="stat-n" style="color:#e67e22">${tot-otk}</div><div class="stat-l">Kutilmoqda</div></div>
+      <div class="stat"><div class="stat-n" style="color:#8e44ad">${mkb}</div><div class="stat-l">Tashxis qo'yilgan</div></div>
+      <div class="stat"><div class="stat-n" style="color:#2980b9">${erk}</div><div class="stat-l">Erkak</div></div>
+      <div class="stat"><div class="stat-n" style="color:#e91e8c">${ayl}</div><div class="stat-l">Ayol</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">MFYlar bo'yicha</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>MFY</th><th>Jami</th><th>Ko'rik o'tkazildi</th><th>Ko'rsatkich</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
+}
+
+// ADMIN PANEL
+async function showAdminPanel(){
+  await loadPasswords();
+  document.getElementById('passInfo').innerHTML=`Xodimlar paroli: <strong>${PASS_XODIM}</strong> &nbsp;|&nbsp; Admin paroli: <strong>${PASS_ADMIN}</strong>`;
+}
+
+async function savePasswords(){
+  const xp=document.getElementById('newXodimPass').value.trim();
+  const ap=document.getElementById('newAdminPass').value.trim();
+  if(!xp&&!ap){showAlert('Hech bo\'lmaganda bitta parolni kiriting','err');return;}
+  if(xp){
+    await sb.from('sozlamalar').upsert({kalit:'xodim_parol',qiymat:xp},{onConflict:'kalit'});
+    PASS_XODIM=xp;
+  }
+  if(ap){
+    await sb.from('sozlamalar').upsert({kalit:'admin_parol',qiymat:ap},{onConflict:'kalit'});
+    PASS_ADMIN=ap;
+  }
+  document.getElementById('passInfo').innerHTML=`Xodimlar paroli: <strong>${PASS_XODIM}</strong> &nbsp;|&nbsp; Admin paroli: <strong>${PASS_ADMIN}</strong>`;
+  document.getElementById('newXodimPass').value='';
+  document.getElementById('newAdminPass').value='';
+  showAlert('✅ Parollar muvaffaqiyatli yangilandi!','ok');
+}
+</script>
+</body>
+</html>
