@@ -151,8 +151,15 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         <div class="f"><label>Familya *</label><input id="familya" type="text" placeholder="Familya" class="cap" oninput="tc(this)"></div>
         <div class="f"><label>Ism *</label><input id="ism" type="text" placeholder="Ism" class="cap" oninput="tc(this)"></div>
         <div class="f"><label>Sharif *</label><input id="sharif" type="text" placeholder="Otasining ismi" class="cap" oninput="tc(this)"></div>
-        <div class="f"><label>JSHSHIR * (14 raqam)</label><input id="jshshir" type="text" placeholder="00000000000000" maxlength="14" oninput="this.value=this.value.replace(/\D/g,'')"></div>
-        <div class="f"><label>Yoshi *</label><input id="yosh" type="number" placeholder="0" min="0" max="120"></div>
+        <div class="f"><label>JSHSHIR * (14 raqam)</label>
+          <input id="jshshir" type="text" placeholder="00000000000000" maxlength="14"
+            oninput="this.value=this.value.replace(/\D/g,'');jshshirAutoFill(this.value)">
+          <div id="jshshirHint" style="font-size:11px;color:#1565c0;margin-top:3px;min-height:16px"></div>
+        </div>
+        <div class="f"><label>Tug'ilgan sana *</label>
+          <input id="yosh" type="text" placeholder="KK.OO.YYYY" readonly
+            style="background:#f5f5f5;cursor:not-allowed">
+        </div>
         <div class="f"><label>Jinsi *</label><select id="jinsi"><option value="">— Tanlang —</option><option>Erkak</option><option>Ayol</option></select></div>
         <div class="f"><label>Oila a'zolari soni *</label>
           <select id="oila">
@@ -387,7 +394,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
       <table>
         <thead><tr>
           <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
-          <th>Yoshi</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
+          <th>Tug'ilgan sana</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
           <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th>Xavf</th><th>Holat</th><th>Kasallik guruhi</th><th>Davolash</th><th id="delCol">Amallar</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
@@ -546,11 +553,11 @@ function autoDate(){
 function gv(id){return document.getElementById(id).value.trim();}
 
 async function saveRecord(){
-  const req=['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy'];
+  const req=['mfy','familya','ism','sharif','jshshir','jinsi','oila','muassasa','rejaOy'];
   for(const f of req){
     if(!gv(f)){showAlert('Majburiy maydonni to\'ldiring!','err');document.getElementById(f).focus();return;}
   }
-  if(gv('jshshir').length!==14){showAlert('JSHSHIR 14 ta raqamdan iborat bo\'lishi kerak!','err');return;}
+  if(gv('jshshir').length!==14){showAlert('JSHSHIR 14 ta raqamdan iborat bo\'lishi kerak!','err');document.getElementById('jshshir').focus();return;}
 
   const saveBtn = document.getElementById('saveBtn');
   const editId = saveBtn.dataset.editId;
@@ -558,7 +565,7 @@ async function saveRecord(){
   const rec={
     viloyat:'Namangan viloyati', tuman:"Uchqo'rg'on tumani",
     mfy:gv('mfy'), familya:gv('familya'), ism:gv('ism'), sharif:gv('sharif'),
-    jshshir:gv('jshshir'), yosh:parseInt(gv('yosh')), jinsi:gv('jinsi'),
+    jshshir:gv('jshshir'), tugilgan_sana:gv('yosh')||null, jinsi:gv('jinsi'),
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
     xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
@@ -605,6 +612,7 @@ function clearForm(){
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
+  document.getElementById('jshshirHint').textContent='';
   document.getElementById('mkb10Manual').checked=false;
   document.getElementById('mkb10').placeholder='J45, I10...';
   document.getElementById('tashxis').placeholder='Tashxis tavsifi (ixtiyoriy)';
@@ -622,7 +630,7 @@ function editRecord(id){
   document.getElementById('ism').value = r.ism||'';
   document.getElementById('sharif').value = r.sharif||'';
   document.getElementById('jshshir').value = r.jshshir||'';
-  document.getElementById('yosh').value = r.yosh||'';
+  document.getElementById('yosh').value = r.tugilgan_sana||''||'';
   const jinSel = document.getElementById('jinsi');
   for(let i=0;i<jinSel.options.length;i++){
     if(jinSel.options[i].value===r.jinsi){jinSel.selectedIndex=i;break;}
@@ -717,6 +725,28 @@ function toggleTibbiyYordam(val){
   }
 }
 
+function jshshirAutoFill(val){
+  const hint = document.getElementById('jshshirHint');
+  const yoshEl = document.getElementById('yosh');
+  if(val.length < 14){
+    hint.textContent = val.length > 0 ? `${val.length}/14 raqam kiritildi` : '';
+    hint.style.color = '#e74c3c';
+    if(val.length < 14) yoshEl.value = '';
+    return;
+  }
+  // Extract: pos 1-2=kun, 3-4=oy, 5-6=yil (0-indexed: [1],[2],[3],[4],[5],[6])
+  const kun = val.substring(1,3);
+  const oy  = val.substring(3,5);
+  const yilKisqa = val.substring(5,7);
+  // Determine century: if yilKisqa >= 25 → 1900s, else 2000s
+  const yilToMn = parseInt(yilKisqa) <= 30 ? '20' : '19';
+  const yilToliq = yilToMn + yilKisqa;
+  const sana = `${kun}.${oy}.${yilToliq}`;
+  yoshEl.value = sana;
+  hint.textContent = `✅ Tug'ilgan: ${sana}`;
+  hint.style.color = '#27ae60';
+}
+
 function toggleDaraja(prefix, checked){
   document.getElementById(prefix+'DarajaDiv').style.display = checked ? 'block' : 'none';
   if(!checked){
@@ -809,6 +839,7 @@ function selectMkb10(kod, nomi){
   document.getElementById('tashxis').value = nomi;
   document.getElementById('mkb10List').style.display='none';
   document.getElementById('mkb10NotFound').style.display='none';
+  document.getElementById('jshshirHint').textContent='';
   document.getElementById('mkb10Manual').checked = false;
 }
 
@@ -829,7 +860,7 @@ function renderTable(){
       <td>${r.mfy}</td>
       <td><strong>${r.familya} ${r.ism}</strong><br><span style="color:#aaa;font-size:11px">${r.sharif}</span></td>
       <td style="font-family:monospace;font-size:11px">${r.jshshir}</td>
-      <td>${r.yosh}</td>
+      <td style="font-size:11px">${r.tugilgan_sana||'—'}</td>
       <td><span class="badge ${r.jinsi==='Erkak'?'bm':'bf'}">${r.jinsi}</span></td>
       <td style="text-align:center">${r.oila}</td>
       <td style="font-size:11px">${r.muassasa}</td>
@@ -1001,7 +1032,7 @@ async function exportExcel(){
 
   // ---- MA'LUMOTLAR ----
   allRecords.forEach((r,i) => {
-    const rowData = [i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
+    const rowData = [i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.tugilgan_sana||'',r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
       r.xavf_guruhi==='1'?'+':'', r.xavf_guruhi==='2'?'+':'', r.xavf_guruhi==='3'?'+':'', r.xavf_guruhi==='4'?'+':'',
       r.kasallik_holati==='Birlamchi'?'+':'', r.kasallik_holati==='Dispanser nazoratiga olingan'?'+':'',
       r.kasallik_guruhi==='Asab tizimi kasalliklari'?'+':'',
