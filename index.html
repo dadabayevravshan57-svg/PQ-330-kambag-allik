@@ -199,6 +199,13 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
             oninput="this.value=this.value.toUpperCase();mkb10Search(this.value)"
             onblur="setTimeout(()=>{document.getElementById('mkb10List').style.display='none'},200)">
           <div id="mkb10List" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;max-height:200px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.15)"></div>
+          <div id="mkb10NotFound" style="display:none;margin-top:6px;padding:6px 10px;background:#fef9e7;border:1px solid #f9ca24;border-radius:6px;font-size:12px;color:#7d6608">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:6px">
+              <input type="checkbox" id="mkb10Manual" onchange="toggleMkb10Manual(this.checked)"
+                style="width:16px;height:16px;cursor:pointer">
+              <span>✋ Ro'yxatda yo'q — ixtiyoriy yozaman</span>
+            </label>
+          </div>
         </div>
         <div class="f full"><label>Tashxis</label><input id="tashxis" type="text" placeholder="Tashxis tavsifi (ixtiyoriy)"></div>
       </div>
@@ -425,6 +432,10 @@ function clearForm(){
   ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
+  document.getElementById('mkb10NotFound').style.display='none';
+  document.getElementById('mkb10Manual').checked=false;
+  document.getElementById('mkb10').placeholder='J45, I10...';
+  document.getElementById('tashxis').placeholder='Tashxis tavsifi (ixtiyoriy)';
 }
 
 function editRecord(id){
@@ -502,12 +513,34 @@ async function loadMkb10(){
 
 function mkb10Search(val){
   const list = document.getElementById('mkb10List');
-  if(!val || val.length < 2){ list.style.display='none'; return; }
+  const notFound = document.getElementById('mkb10NotFound');
+  const manual = document.getElementById('mkb10Manual');
+
+  // Agar manual rejim yoqilgan bo'lsa — qidirmaymiz
+  if(manual && manual.checked) return;
+
+  if(!val || val.length < 2){
+    list.style.display='none';
+    notFound.style.display='none';
+    return;
+  }
   const q = val.toLowerCase();
   const matches = mkb10Cache.filter(x =>
     x.kod.toLowerCase().startsWith(q) || x.nomi.toLowerCase().includes(q)
   ).slice(0, 15);
-  if(!matches.length){ list.style.display='none'; return; }
+
+  if(!matches.length){
+    list.style.display='none';
+    // Ro'yxatda yo'q — checkbox ko'rsat
+    notFound.style.display='block';
+    manual.checked = false;
+    // MKB-10 maydonini tahrirlanadigan qilish (allaqachon shunday)
+    // Tashxis maydonini bo'sh qilish
+    document.getElementById('tashxis').value='';
+    return;
+  }
+
+  notFound.style.display='none';
   list.innerHTML = matches.map(x => `
     <div onclick="selectMkb10('${x.kod}','${x.nomi.replace(/'/g,"&#39;")}')"
       style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px"
@@ -518,10 +551,28 @@ function mkb10Search(val){
   list.style.display='block';
 }
 
+function toggleMkb10Manual(checked){
+  const inp = document.getElementById('mkb10');
+  const tashxis = document.getElementById('tashxis');
+  if(checked){
+    // Manual rejim — maydonlarni tozalab, erkin yozishga ruxsat
+    inp.value='';
+    tashxis.value='';
+    inp.placeholder='Kodni o'zingiz kiriting...';
+    tashxis.placeholder='Tashxisni o'zingiz kiriting...';
+    inp.focus();
+  } else {
+    inp.placeholder='J45, I10...';
+    tashxis.placeholder='Tashxis tavsifi (ixtiyoriy)';
+  }
+}
+
 function selectMkb10(kod, nomi){
   document.getElementById('mkb10').value = kod;
   document.getElementById('tashxis').value = nomi;
   document.getElementById('mkb10List').style.display='none';
+  document.getElementById('mkb10NotFound').style.display='none';
+  document.getElementById('mkb10Manual').checked = false;
 }
 
 function renderTable(){
