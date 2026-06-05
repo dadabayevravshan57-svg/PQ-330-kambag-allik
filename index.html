@@ -208,6 +208,34 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           </div>
         </div>
         <div class="f full"><label>Tashxis</label><input id="tashxis" type="text" placeholder="Tashxis tavsifi (ixtiyoriy)"></div>
+        <div class="f"><label>Tasnif xavf guruhi</label>
+          <select id="xavfGuruhi">
+            <option value="">— Tanlang —</option>
+            <option value="1">1-guruh</option>
+            <option value="2">2-guruh</option>
+            <option value="3">3-guruh</option>
+            <option value="4">4-guruh</option>
+          </select>
+        </div>
+        <div class="f"><label>Kasallik holati</label>
+          <select id="kasallikHolati">
+            <option value="">— Tanlang —</option>
+            <option value="Birlamchi">Birlamchi</option>
+            <option value="Dispanser nazoratiga olingan">Dispanser nazoratiga olingan</option>
+          </select>
+        </div>
+        <div class="f"><label>Kasallik guruhi</label>
+          <select id="kasallikGuruhi">
+            <option value="">— Tanlang —</option>
+            <option value="Asab tizimi kasalliklari">Asab tizimi kasalliklari</option>
+            <option value="Yurak qon-tomir tizimi kasalliklari">Yurak qon-tomir tizimi kasalliklari</option>
+            <option value="Nafas olish tizimi kasalliklari">Nafas olish tizimi kasalliklari</option>
+            <option value="Peshob-ayirish tizimi kasalliklari">Peshob-ayirish tizimi kasalliklari</option>
+            <option value="Teri-tanosil a'zolari kasalliklari">Teri-tanosil a'zolari kasalliklari</option>
+            <option value="Suyak-mushak tizimi kasalliklari">Suyak-mushak tizimi kasalliklari</option>
+            <option value="Endokrin tizimi kasalliklari">Endokrin tizimi kasalliklari</option>
+          </select>
+        </div>
       </div>
 
       <div class="actions">
@@ -233,7 +261,7 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
         <thead><tr>
           <th>#</th><th>MFY</th><th>F.I.SH</th><th>JSHSHIR</th>
           <th>Yoshi</th><th>Jinsi</th><th>Oila</th><th>Muassasa</th>
-          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th id="delCol">Amallar</th>
+          <th>Reja oyi</th><th>Ko'rik sanasi</th><th>MKB-10</th><th>Tashxis</th><th>Xavf</th><th>Holat</th><th>Kasallik guruhi</th><th id="delCol">Amallar</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
       </table>
@@ -405,7 +433,8 @@ async function saveRecord(){
     mfy:gv('mfy'), familya:gv('familya'), ism:gv('ism'), sharif:gv('sharif'),
     jshshir:gv('jshshir'), yosh:parseInt(gv('yosh')), jinsi:gv('jinsi'),
     oila:parseInt(gv('oila')), muassasa:gv('muassasa'), reja_oy:gv('rejaOy'),
-    korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null
+    korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
+    xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null
   };
 
   if(editId){
@@ -429,7 +458,7 @@ async function saveRecord(){
 }
 
 function clearForm(){
-  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis'].forEach(id=>document.getElementById(id).value='');
+  ['mfy','familya','ism','sharif','jshshir','yosh','jinsi','oila','muassasa','rejaOy','korikSana','mkb10','tashxis','xavfGuruhi','kasallikHolati','kasallikGuruhi'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('korikSana').classList.remove('adate');
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
@@ -467,6 +496,12 @@ function editRecord(id){
   document.getElementById('korikSana').value = r.korik_sana||'';
   document.getElementById('mkb10').value = r.mkb10||'';
   document.getElementById('tashxis').value = r.tashxis||'';
+  const xavfSel=document.getElementById('xavfGuruhi');
+  for(let i=0;i<xavfSel.options.length;i++){if(xavfSel.options[i].value==r.xavf_guruhi){xavfSel.selectedIndex=i;break;}}
+  const holatiSel=document.getElementById('kasallikHolati');
+  for(let i=0;i<holatiSel.options.length;i++){if(holatiSel.options[i].value===r.kasallik_holati){holatiSel.selectedIndex=i;break;}}
+  const guruhiSel=document.getElementById('kasallikGuruhi');
+  for(let i=0;i<guruhiSel.options.length;i++){if(guruhiSel.options[i].value===r.kasallik_guruhi){guruhiSel.selectedIndex=i;break;}}
   // Switch to form tab
   document.querySelector('.tab').click();
   // Mark as editing
@@ -600,6 +635,9 @@ function renderTable(){
       <td>${r.korik_sana?`<span class="badge bd">${fd(r.korik_sana)}</span>`:'<span class="badge bw">Kutilmoqda</span>'}</td>
       <td>${r.mkb10?`<span class="badge" style="background:#fef5e7;color:#d35400">${r.mkb10}</span>`:'—'}</td>
       <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis">${r.tashxis||'—'}</td>
+      <td style="text-align:center">${r.xavf_guruhi?`<span class="badge" style="background:#e8f5e9;color:#2e7d32">${r.xavf_guruhi}-guruh</span>`:'—'}</td>
+      <td style="font-size:11px">${r.kasallik_holati?`<span class="badge" style="background:#e3f2fd;color:#1565c0;font-size:10px">${r.kasallik_holati}</span>`:'—'}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">${r.kasallik_guruhi||'—'}</td>
       <td style="white-space:nowrap"><button class="btn-edit" onclick="editRecord('${r.id}')">✏️ Tahrir</button> ${currentRole==='admin'?`<button class="btn-del" onclick="deleteRecord('${r.id}')">🗑</button>`:''}</td>
     </tr>`).join('');
 }
@@ -632,8 +670,22 @@ async function exportExcel(){
     await loadRecords();
   }
   if(!allRecords.length){showAlert('Ma\'lumot yo\'q!','err');return;}
-  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis"];
-  const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'']);
+  const headers=['№','Viloyat','Tuman','MFY','Familya','Ism','Sharif','JSHSHIR','Yoshi','Jinsi',"Oila a'zolari soni","Biriktirilgan muassasa","Reja ko'rik oyi","Ko'rik o'tkazilgan sana","MKB-10","Tashxis",'1-guruh (+/-)','2-guruh (+/-)','3-guruh (+/-)','4-guruh (+/-)','Birlamchi aniqlankan kasallik (+/-)','Dispanser nazoratiga olingan (+/-)','Asab tizimi kasalliklari (+/-)','Yurak qon-tomir tizimi kasalliklari (+/-)','Nafas olish tizimi kasalliklari (+/-)','Peshob-ayirish tizimi kasalliklari (+/-)','Teri-tanosil azolari kasalliklari (+/-)','Suyak-mushak tizimi kasalliklari (+/-)','Endokrin tizimi kasalliklari (+/-)'];
+  const data=allRecords.map((r,i)=>[i+1,r.viloyat,r.tuman,r.mfy,r.familya,r.ism,r.sharif,r.jshshir,r.yosh,r.jinsi,r.oila,r.muassasa,r.reja_oy,r.korik_sana?fd(r.korik_sana):'',r.mkb10||'',r.tashxis||'',
+    r.xavf_guruhi==='1'?'+':'',
+    r.xavf_guruhi==='2'?'+':'',
+    r.xavf_guruhi==='3'?'+':'',
+    r.xavf_guruhi==='4'?'+':'',
+    r.kasallik_holati==='Birlamchi'?'+':'',
+    r.kasallik_holati==='Dispanser nazoratiga olingan'?'+':'',
+    r.kasallik_guruhi==='Asab tizimi kasalliklari'?'+':'',
+    r.kasallik_guruhi==='Yurak qon-tomir tizimi kasalliklari'?'+':'',
+    r.kasallik_guruhi==='Nafas olish tizimi kasalliklari'?'+':'',
+    r.kasallik_guruhi==='Peshob-ayirish tizimi kasalliklari'?'+':'',
+    r.kasallik_guruhi==="Teri-tanosil a'zolari kasalliklari"?'+':'',
+    r.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari'?'+':'',
+    r.kasallik_guruhi==='Endokrin tizimi kasalliklari'?'+':''
+  ]);
   const wb=XLSX.utils.book_new();
   const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
   ws['!cols']=[{wch:5},{wch:20},{wch:20},{wch:18},{wch:16},{wch:14},{wch:16},{wch:16},{wch:7},{wch:8},{wch:18},{wch:30},{wch:16},{wch:20},{wch:12},{wch:30}];
