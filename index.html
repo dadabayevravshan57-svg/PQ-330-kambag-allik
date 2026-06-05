@@ -184,8 +184,18 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
           </select>
         </div>
         <div class="f full"><label>Biriktirilgan oilaviy shifokor F.I.Sh</label>
-          <input id="oilaviyShifokor" type="text" placeholder="Shifokor familyasi ismi sharifi" list="shifokorList" autocomplete="off">
+          <input id="oilaviyShifokor" type="text" placeholder="Avval muassasa tanlang..." 
+            list="shifokorList" autocomplete="off" readonly
+            style="background:#f5f5f5;cursor:not-allowed"
+            oninput="validateShifokor(this.value)">
           <datalist id="shifokorList"></datalist>
+          <div style="margin-top:6px;padding:6px 10px;background:#fef9e7;border:1px solid #f9ca24;border-radius:6px;font-size:12px;color:#7d6608">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="shifokorManual" onchange="toggleShifokorManual(this.checked)" style="width:16px;height:16px">
+              <span>Ro'yxatda yo'q shifokor — belgilang va kiriting</span>
+            </label>
+            <div id="shifokorEslatma" style="display:none;margin-top:4px;color:#c0392b;font-size:11px">⚠️ Iltimos, shifokor ismini kiriting!</div>
+          </div>
         </div>
       </div>
 
@@ -617,6 +627,11 @@ function clearForm(){
   document.getElementById('dateHint').textContent='';
   document.getElementById('mkb10NotFound').style.display='none';
   document.getElementById('jshshirHint').textContent='';
+  const shInp = document.getElementById('oilaviyShifokor');
+  shInp.readOnly = true; shInp.style.background='#f5f5f5'; shInp.style.cursor='not-allowed';
+  shInp.placeholder='Avval muassasa tanlang...';
+  document.getElementById('shifokorNotFound').style.display='none';
+  document.getElementById('shifokorManual').checked=false;
   document.getElementById('mkb10Manual').checked=false;
   document.getElementById('mkb10').placeholder='J45, I10...';
   document.getElementById('tashxis').placeholder='Tashxis tavsifi (ixtiyoriy)';
@@ -774,15 +789,72 @@ const SHIFOKORLAR = {
 function onMuassasaChange(val){
   const inp = document.getElementById('oilaviyShifokor');
   const list = document.getElementById('shifokorList');
+  const notFound = document.getElementById('shifokorNotFound');
+  const manual = document.getElementById('shifokorManual');
   if(!list) return;
   list.innerHTML = '';
   inp.value = '';
+  inp.readOnly = false;
+  inp.style.background = '';
+  inp.style.cursor = '';
+  if(manual) manual.checked = false;
+  const eslatma2=document.getElementById('shifokorEslatma');
+  if(eslatma2) eslatma2.style.display='none';
   if(val && SHIFOKORLAR[val]){
     SHIFOKORLAR[val].forEach(s => {
       const opt = document.createElement('option');
       opt.value = s;
       list.appendChild(opt);
     });
+    inp.placeholder = 'Shifokorni tanlang...';
+  } else if(val) {
+    inp.placeholder = 'Shifokor topilmadi — pastdagi katak orqali yozing';
+    notFound.style.display = 'block';
+    inp.readOnly = true;
+    inp.style.background = '#f5f5f5';
+  } else {
+    inp.placeholder = 'Avval muassasa tanlang...';
+    inp.readOnly = true;
+    inp.style.background = '#f5f5f5';
+    inp.style.cursor = 'not-allowed';
+  }
+}
+
+function validateShifokor(val){
+  const muassasa = document.getElementById('muassasa').value;
+  const notFound = document.getElementById('shifokorNotFound');
+  const manual = document.getElementById('shifokorManual');
+  if(manual && manual.checked) return;
+  if(!muassasa || !SHIFOKORLAR[muassasa]) return;
+  const list = SHIFOKORLAR[muassasa];
+  if(val && !list.includes(val)){
+    notFound.style.display = 'block';
+  } else {
+    notFound.style.display = 'none';
+  }
+}
+
+function toggleShifokorManual(checked){
+  const inp = document.getElementById('oilaviyShifokor');
+  const eslatma = document.getElementById('shifokorEslatma');
+  if(checked){
+    inp.readOnly = false;
+    inp.style.background = '';
+    inp.style.cursor = '';
+    inp.value = '';
+    inp.placeholder = 'Shifokor ismini kiriting...';
+    if(eslatma) eslatma.style.display = 'block';
+    inp.focus();
+    inp.oninput = function(){
+      if(eslatma) eslatma.style.display = this.value ? 'none' : 'block';
+    };
+  } else {
+    inp.readOnly = true;
+    inp.style.background = '#f5f5f5';
+    inp.style.cursor = 'not-allowed';
+    inp.value = '';
+    inp.placeholder = 'Shifokorni tanlang...';
+    if(eslatma) eslatma.style.display = 'none';
   }
 }
 
@@ -879,6 +951,11 @@ function selectMkb10(kod, nomi){
   document.getElementById('mkb10List').style.display='none';
   document.getElementById('mkb10NotFound').style.display='none';
   document.getElementById('jshshirHint').textContent='';
+  const shInp = document.getElementById('oilaviyShifokor');
+  shInp.readOnly = true; shInp.style.background='#f5f5f5'; shInp.style.cursor='not-allowed';
+  shInp.placeholder='Avval muassasa tanlang...';
+  document.getElementById('shifokorNotFound').style.display='none';
+  document.getElementById('shifokorManual').checked=false;
   document.getElementById('mkb10Manual').checked = false;
 }
 
