@@ -890,8 +890,8 @@ async function exportExcel(){
     r.davolash_rejasi==='Statsionar'?'+':'',
     r.dav_tuman?'+':'', r.dav_viloyat?'+':'', r.dav_resp?'+':'',
     // Ko'rsatilgan tibbiy yordam - Ambulator (col 34-38, 5 ta)
-    r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_boshlangan?fd(r.davo_boshlangan):'',
-    r.tibbiy_yordam==='Ambulator sharoitda'&&r.davo_tugagan?fd(r.davo_tugagan):'',
+    r.davo_boshlangan?fd(r.davo_boshlangan):'',
+    r.davo_tugagan?fd(r.davo_tugagan):'',
     r.ambular_turi==='Uy statsionari sharoitida'?'+':'',
     r.ambular_turi==='Kunduzgi statsionar sharoitda'?'+':'',
     r.ambular_turi==='Ambulator tavsiya asosida'?'+':'',
