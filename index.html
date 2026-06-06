@@ -1469,38 +1469,33 @@ async function exportPQ330Hisobot(){
     border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}
   });
   const dS = () => ({
-    font:{name:'Times New Roman',size:10},
+    font:{name:'Times New Roman',size:11,bold:true},
     alignment:{horizontal:'center',vertical:'middle'},
     border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}
   });
 
   const recs = allRecords;
-  const tot = recs.length;
-
-  // Helper
-  const cnt = (fn) => recs.filter(fn).length;
-  const cntMfy = (m, fn) => recs.filter(r=>r.mfy===m&&fn(r)).length;
 
   // ---- SARLAVHALAR (3 qator) ----
   // 1-qator
   const r0 = ws.addRow([
-    "MFY",
+    "Tuman nomi",
     "Tibbiy ko'rik o'tkazilgan kambag'al oila a'zolari soni",
-    "Tasnif xavf guruhi","","","",
+    "Tasniflanagan xavf (salomatlik) guruhiga kiritilganlar soni","","","",
     "Kasallik guruhlari","","","","","","","",
-    "Birlamchi kasallik aniqlangan",
-    "Dispanser nazoratiga olingan",
-    "Davolash rejasi tuzilgan","","","",
+    "Birlamchi kasallik aniqlangan soni",
+    "Dispanser nazoratiga olinganlar soni",
+    "Davolash rejasi tuzilganlar soni","","","",
     "Ko'rsatilgan tibbiy yordam","","","","","","","","","","","","","","","","","",
   ]);
   r0.eachCell(c=>Object.assign(c,hS('BDD7EE')));
-  r0.height = 45;
+  r0.height = 55;
 
-  // Merges - row 1
-  ws.mergeCells(1,1,3,1);  // MFY
-  ws.mergeCells(1,2,3,2);  // Ko'rik soni
-  ws.mergeCells(1,3,1,6);  // Xavf guruhi
-  ws.mergeCells(1,7,1,14); // Kasallik guruhlari
+  // Merges row 1
+  ws.mergeCells(1,1,3,1);   // Tuman nomi
+  ws.mergeCells(1,2,3,2);   // Ko'rik soni
+  ws.mergeCells(1,3,1,6);   // Xavf guruhi
+  ws.mergeCells(1,7,1,14);  // Kasallik guruhlari
   ws.mergeCells(1,15,3,15); // Birlamchi
   ws.mergeCells(1,16,3,16); // Dispanser
   ws.mergeCells(1,17,1,20); // Davolash rejasi
@@ -1510,108 +1505,107 @@ async function exportPQ330Hisobot(){
   const r1 = ws.addRow([
     "","",
     "1-guruh","2-guruh","3-guruh","4-guruh",
-    "Asab tizimi","Yurak qon-tomir","Nafas olish","Peshob-ayirish","Teri-tanosil","Suyak-mushak","Endokrin tizim","Boshqa",
+    "Asab tizimi kasalliklari soni",
+    "Yurak qon-tomir tizimi kasalliklari soni",
+    "Nafas olish tizimi kasalliklari soni",
+    "Peshob-ayirish tizimi kasalliklari soni",
+    "Teri-tanosil a'zolari kasalliklari soni",
+    "Suyak-mushak tizimi kasalliklari soni",
+    "Endokrin tizimi kasalliklari soni",
+    "Boshqa tizimdagi kasalliklar",
     "","",
-    "Tuman darajasi","Viloyat darajasi","Respublika darajasi","Ambulatoriya (+/-)",
-    "Ambular sharoitda davolanadigan soni","","Statsionar sharoitda davolanadigan soni","",
-    "Ambular sharoitda davolangan soni","","","",
+    "Tuman darajasida","Viloyat darajasida","Respublika darajasida","Ambulatoriya (+/-)",
+    "Ambulator sharoitda davolanadigan soni","",
+    "Statsionar sharoitda davolanadigan soni","",
+    "Ambulator sharoitda davolangan soni","","","",
     "Statsionar sharoitda davolangan soni","","","","","","","","","",
   ]);
   r1.eachCell(c=>Object.assign(c,hS('C6EFCE')));
-  r1.height = 40;
+  r1.height = 50;
 
-  ws.mergeCells(2,17,3,17); // Tuman
-  ws.mergeCells(2,18,3,18); // Viloyat
-  ws.mergeCells(2,19,3,19); // Resp
-  ws.mergeCells(2,20,3,20); // Ambul
-  ws.mergeCells(2,21,2,22); // Ambular davolanadigan
-  ws.mergeCells(2,23,2,24); // Statsionar davolanadigan
-  ws.mergeCells(2,25,2,28); // Ambular davolangan
-  ws.mergeCells(2,29,2,38); // Statsionar davolangan
+  ws.mergeCells(2,17,3,17);
+  ws.mergeCells(2,18,3,18);
+  ws.mergeCells(2,19,3,19);
+  ws.mergeCells(2,20,3,20);
+  ws.mergeCells(2,21,2,22);
+  ws.mergeCells(2,23,2,24);
+  ws.mergeCells(2,25,2,28);
+  ws.mergeCells(2,29,2,38);
 
   // 3-qator
   const r2 = ws.addRow([
     "","","","","","","","","","","","","","","","","","","","",
-    "Uй statsionari","Kunduzgi statsionar",
-    "Tuman darajasi","Viloyat darajasi",
-    "Tuman darajasi","Viloyat darajasi","Respublika darajasi","Ambulator tavsiya",
-    "Konservativ","Jarrohlik","Konservativ","Jarrohlik","Yuq.texn.jarr","Konservativ","Yuq.texn.jarr",
-    "","","","","",
+    "Uy statsionari sharoitida",
+    "Kunduzgi statsionar sharoitida",
+    "Tuman darajasida",
+    "Viloyat darajasida",
+    "Tuman darajasida","Viloyat darajasida","Respublika darajasida","Ambulator tavsiya asosida",
+    "Konservativ","Jarrohlik",
+    "Konservativ","Jarrohlik","Shu jumladan, yuqori texnologik jarrohlik",
+    "Konservativ","Yuqori texnologik jarrohlik",
+    "","","",
   ]);
   r2.eachCell(c=>Object.assign(c,hS('E2AFDE')));
-  r2.height = 35;
+  r2.height = 50;
 
-  ws.mergeCells(3,29,3,29);
-  ws.mergeCells(3,30,3,30);
-  ws.mergeCells(3,31,3,31);
-  ws.mergeCells(3,32,3,32);
-  ws.mergeCells(3,33,3,33);
-  ws.mergeCells(3,34,3,34);
-  ws.mergeCells(3,35,3,35);
+  // ---- 1 TA JAMI QATOR ----
+  const n = recs.length;
+  const g1=recs.filter(r=>['1','1-guruh'].includes(r.xavf_guruhi)).length;
+  const g2=recs.filter(r=>['2','2-guruh'].includes(r.xavf_guruhi)).length;
+  const g3=recs.filter(r=>['3','3-guruh'].includes(r.xavf_guruhi)).length;
+  const g4=recs.filter(r=>['4','4-guruh'].includes(r.xavf_guruhi)).length;
+  const kas1=recs.filter(r=>r.kasallik_guruhi==='Asab tizimi').length;
+  const kas2=recs.filter(r=>r.kasallik_guruhi==='Yurak qon-tomir tizimi').length;
+  const kas3=recs.filter(r=>r.kasallik_guruhi==='Nafas olish tizimi').length;
+  const kas4=recs.filter(r=>r.kasallik_guruhi==='Peshob-ayirish tizimi').length;
+  const kas5=recs.filter(r=>r.kasallik_guruhi==='Teri-tanosil').length;
+  const kas6=recs.filter(r=>r.kasallik_guruhi==='Suyak-mushak tizimi').length;
+  const kas7=recs.filter(r=>r.kasallik_guruhi==='Endokrin tizimi').length;
+  const kas8=recs.filter(r=>r.kasallik_guruhi==='Boshqa').length;
+  const birlamchi=recs.filter(r=>r.kasallik_holati==='Birlamchi').length;
+  const dispanser=recs.filter(r=>r.kasallik_holati==='Dispanser').length;
+  const dTuman=recs.filter(r=>r.dav_tuman).length;
+  const dViloyat=recs.filter(r=>r.dav_viloyat).length;
+  const dResp=recs.filter(r=>r.dav_resp).length;
+  const ambul=recs.filter(r=>r.davolash_rejasi==='Ambulatoriya').length;
+  const uyStats=recs.filter(r=>r.ambular_turi==='Uy statsionari').length;
+  const kunStats=recs.filter(r=>r.ambular_turi==='Kunduzgi statsionar').length;
+  const statsTuman=recs.filter(r=>r.dav_tuman).length;
+  const statsViloyat=recs.filter(r=>r.dav_viloyat).length;
+  const tBosh=recs.filter(r=>r.tuman_boshlangan).length;
+  const vBosh=recs.filter(r=>r.viloyat_boshlangan).length;
+  const rBosh=recs.filter(r=>r.resp_boshlangan).length;
+  const ambTavsiya=recs.filter(r=>r.ambular_turi==='Ambulator tavsiya').length;
+  const tKons=recs.filter(r=>r.tuman_davo_turi==='Konservativ').length;
+  const tJarr=recs.filter(r=>r.tuman_davo_turi==='Jarrohlik').length;
+  const vKons=recs.filter(r=>r.viloyat_davo_turi==='Konservativ').length;
+  const vJarr=recs.filter(r=>r.viloyat_davo_turi==='Jarrohlik').length;
+  const vYuq=recs.filter(r=>r.viloyat_davo_turi==='Yuqori texnologik').length;
+  const rKons=recs.filter(r=>r.resp_davo_turi==='Konservativ').length;
+  const rYuq=recs.filter(r=>r.resp_davo_turi==='Yuqori texnologik').length;
 
-  // ---- MA'LUMOT QATORLARI ----
-  let totals = new Array(38).fill(0);
-
-  MFY_LIST.forEach((m, mi) => {
-    const tr = recs.filter(r=>r.mfy===m);
-    const n = tr.length;
-    const g1=tr.filter(r=>r.xavf_guruhi==='1'||r.xavf_guruhi==='1-guruh').length;
-    const g2=tr.filter(r=>r.xavf_guruhi==='2'||r.xavf_guruhi==='2-guruh').length;
-    const g3=tr.filter(r=>r.xavf_guruhi==='3'||r.xavf_guruhi==='3-guruh').length;
-    const g4=tr.filter(r=>r.xavf_guruhi==='4'||r.xavf_guruhi==='4-guruh').length;
-    const kas1=tr.filter(r=>r.kasallik_guruhi==='Asab tizimi').length;
-    const kas2=tr.filter(r=>r.kasallik_guruhi==='Yurak qon-tomir tizimi').length;
-    const kas3=tr.filter(r=>r.kasallik_guruhi==='Nafas olish tizimi').length;
-    const kas4=tr.filter(r=>r.kasallik_guruhi==='Peshob-ayirish tizimi').length;
-    const kas5=tr.filter(r=>r.kasallik_guruhi==='Teri-tanosil').length;
-    const kas6=tr.filter(r=>r.kasallik_guruhi==='Suyak-mushak tizimi').length;
-    const kas7=tr.filter(r=>r.kasallik_guruhi==='Endokrin tizimi').length;
-    const kas8=tr.filter(r=>r.kasallik_guruhi==='Boshqa').length;
-    const birlamchi=tr.filter(r=>r.kasallik_holati==='Birlamchi').length;
-    const dispanser=tr.filter(r=>r.kasallik_holati==='Dispanser').length;
-    const dTuman=tr.filter(r=>r.dav_tuman).length;
-    const dViloyat=tr.filter(r=>r.dav_viloyat).length;
-    const dResp=tr.filter(r=>r.dav_resp).length;
-    const ambul=tr.filter(r=>r.davolash_rejasi==='Ambulatoriya').length;
-    const uyStats=tr.filter(r=>r.ambular_turi==='Uy statsionari').length;
-    const kunStats=tr.filter(r=>r.ambular_turi==='Kunduzgi statsionar').length;
-    const statsTuman=tr.filter(r=>r.statsionar_daraja==='Tuman').length;
-    const statsViloyat=tr.filter(r=>r.statsionar_daraja==='Viloyat').length;
-    const tBosh=tr.filter(r=>r.tuman_boshlangan).length;
-    const vBosh=tr.filter(r=>r.viloyat_boshlangan).length;
-    const rBosh=tr.filter(r=>r.resp_boshlangan).length;
-    const ambTavsiya=tr.filter(r=>r.ambular_turi==='Ambulator tavsiya').length;
-    const tKons=tr.filter(r=>r.tuman_davo_turi==='Konservativ').length;
-    const tJarr=tr.filter(r=>r.tuman_davo_turi==='Jarrohlik').length;
-    const vKons=tr.filter(r=>r.viloyat_davo_turi==='Konservativ').length;
-    const vJarr=tr.filter(r=>r.viloyat_davo_turi==='Jarrohlik').length;
-    const vYuq=tr.filter(r=>r.viloyat_davo_turi==='Yuq.texn.jarr').length;
-    const rKons=tr.filter(r=>r.resp_davo_turi==='Konservativ').length;
-    const rYuq=tr.filter(r=>r.resp_davo_turi==='Yuq.texn.jarr').length;
-
-    const rowData = [m, n, g1,g2,g3,g4, kas1,kas2,kas3,kas4,kas5,kas6,kas7,kas8,
-      birlamchi, dispanser, dTuman,dViloyat,dResp,ambul,
-      uyStats,kunStats, statsTuman,statsViloyat,
-      tBosh,vBosh,rBosh,ambTavsiya,
-      tKons,tJarr,vKons,vJarr,vYuq,rKons,rYuq,0,0,0];
-
-    rowData.forEach((v,i)=>{ if(i>0) totals[i]=(totals[i]||0)+(v||0); });
-
-    const row = ws.addRow(rowData);
-    row.eachCell(c=>Object.assign(c,dS()));
-    row.getCell(1).alignment={horizontal:'left',vertical:'middle',wrapText:true};
-    row.height = 20;
-  });
-
-  // JAMI qatori
-  const jamiRow = ws.addRow(["JAMI", ...totals.slice(1)]);
-  jamiRow.eachCell(c=>Object.assign(c,hS('FFD700')));
-  jamiRow.height = 25;
+  const dataRow = ws.addRow([
+    "Uchqo'rg'on tumani",
+    n, g1,g2,g3,g4,
+    kas1,kas2,kas3,kas4,kas5,kas6,kas7,kas8,
+    birlamchi, dispanser,
+    dTuman, dViloyat, dResp, ambul,
+    uyStats, kunStats,
+    statsTuman, statsViloyat,
+    tBosh, vBosh, rBosh, ambTavsiya,
+    tKons, tJarr,
+    vKons, vJarr, vYuq,
+    rKons, rYuq,
+    0, 0, 0
+  ]);
+  dataRow.eachCell(c=>Object.assign(c,dS()));
+  dataRow.getCell(1).alignment={horizontal:'center',vertical:'middle',wrapText:true};
+  dataRow.height = 30;
 
   // Ustun kengliklar
   ws.getColumn(1).width = 22;
-  ws.getColumn(2).width = 10;
-  for(let i=3;i<=38;i++) ws.getColumn(i).width = 9;
+  ws.getColumn(2).width = 12;
+  for(let i=3;i<=38;i++) ws.getColumn(i).width = 10;
 
   // Yuklab olish
   const buf = await wb.xlsx.writeBuffer();
