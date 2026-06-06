@@ -614,6 +614,21 @@ async function saveRecord(){
     if(!gv(f)){showAlert('Majburiy maydonni to\'ldiring!','err');document.getElementById(f).focus();return;}
   }
   if(gv('jshshir').length!==14){showAlert('JSHSHIR 14 ta raqamdan iborat bo\'lishi kerak!','err');document.getElementById('jshshir').focus();return;}
+  // JSHSHIR ro'yxatda borligini tekshirish
+  const jshshirVal = gv('jshshir');
+  const {data:jshshirCheck, error:jshshirErr} = await sb.from('jshshir_royxat').select('jshshir').eq('jshshir', jshshirVal).single();
+  if(jshshirErr || !jshshirCheck){
+    showAlert('❌ Bu JSHSHIR kambag\'allik ro\'yxatida yo\'q! Ro\'yxatga olish mumkin emas.','err');
+    document.getElementById('jshshir').focus();
+    return;
+  }
+  // Avval bu JSHSHIR ro'yxatga olinganligini tekshirish
+  const {data:dupCheck} = await sb.from('bemorlar').select('id').eq('jshshir', jshshirVal);
+  const editId2 = document.getElementById('saveBtn').dataset.editId;
+  if(dupCheck && dupCheck.length > 0 && !editId2){
+    showAlert('⚠️ Bu JSHSHIR allaqachon ro\'yxatga olingan!','err');
+    return;
+  }
 
   const saveBtn = document.getElementById('saveBtn');
   const editId = saveBtn.dataset.editId;
