@@ -507,7 +507,7 @@ async function doLogin(){
   } else if(loginType==='admin' && pass===PASS_ADMIN){
     currentRole='admin'; initApp();
   } else {
-    errEl.textContent = "Parol noto'g'ri! Zapas parol: R_993276013ser";
+    errEl.textContent = "Parol noto'g'ri! Iltimos qayta urinib ko'ring.";
     errEl.style.display='block';
     setTimeout(()=>errEl.style.display='none',4000);
   }
