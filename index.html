@@ -626,9 +626,9 @@ async function saveRecord(){
     korik_sana:gv('korikSana')||null, mkb10:gv('mkb10')||null, tashxis:gv('tashxis')||null,
     xavf_guruhi:gv('xavfGuruhi')||null, kasallik_holati:gv('kasallikHolati')||null, kasallik_guruhi:gv('kasallikGuruhi')||null,
     davolash_rejasi:gv('davolashRejasi')||null,
-    dav_tuman: document.getElementById('chkDavTuman')?.checked ? 'Tuman darajasida' : null,
-    dav_viloyat: document.getElementById('chkDavViloyat')?.checked ? 'Viloyat darajasida' : null,
-    dav_resp: document.getElementById('chkDavResp')?.checked ? 'Respublika darajasida' : null,
+    dav_tuman: (document.getElementById('chkTuman')?.checked || document.getElementById('chkDavTuman')?.checked) ? 'Tuman darajasida' : null,
+    dav_viloyat: (document.getElementById('chkViloyat')?.checked || document.getElementById('chkDavViloyat')?.checked) ? 'Viloyat darajasida' : null,
+    dav_resp: (document.getElementById('chkResp')?.checked || document.getElementById('chkDavResp')?.checked) ? 'Respublika darajasida' : null,
     tibbiy_yordam:gv('tibbiyYordam')||null,
     davo_boshlangan:gv('davoBoshlangan')||null,
     davo_tugagan:gv('davoTugagan')||null,
@@ -717,9 +717,21 @@ function editRecord(id){
   const rejaSel=document.getElementById('davolashRejasi');
   for(let i=0;i<rejaSel.options.length;i++){if(rejaSel.options[i].value===r.davolash_rejasi){rejaSel.selectedIndex=i;break;}}
   toggleStatsionar(r.davolash_rejasi||'');
-  if(r.dav_tuman){const el=document.getElementById('chkDavTuman');if(el)el.checked=true;}
-  if(r.dav_viloyat){const el=document.getElementById('chkDavViloyat');if(el)el.checked=true;}
-  if(r.dav_resp){const el=document.getElementById('chkDavResp');if(el)el.checked=true;}
+  if(r.dav_tuman){
+    const el1=document.getElementById('chkDavTuman');if(el1)el1.checked=true;
+    const el2=document.getElementById('chkTuman');if(el2)el2.checked=true;
+    toggleDaraja('tuman',true);
+  }
+  if(r.dav_viloyat){
+    const el1=document.getElementById('chkDavViloyat');if(el1)el1.checked=true;
+    const el2=document.getElementById('chkViloyat');if(el2)el2.checked=true;
+    toggleDaraja('viloyat',true);
+  }
+  if(r.dav_resp){
+    const el1=document.getElementById('chkDavResp');if(el1)el1.checked=true;
+    const el2=document.getElementById('chkResp');if(el2)el2.checked=true;
+    toggleDaraja('resp',true);
+  }
   const tibbiyYordamSel=document.getElementById('tibbiyYordam');
   for(let i=0;i<tibbiyYordamSel.options.length;i++){if(tibbiyYordamSel.options[i].value===r.tibbiy_yordam){tibbiyYordamSel.selectedIndex=i;break;}}
   toggleTibbiyYordam(r.tibbiy_yordam||'');
@@ -1564,9 +1576,9 @@ async function exportPQ330Hisobot(){
   const kas8=recs.filter(r=>r.kasallik_guruhi==='Boshqa').length;
   const birlamchi=recs.filter(r=>r.kasallik_holati==='Birlamchi').length;
   const dispanser=recs.filter(r=>r.kasallik_holati==='Dispanser').length;
-  const dTuman=recs.filter(r=>r.dav_tuman).length;
-  const dViloyat=recs.filter(r=>r.dav_viloyat).length;
-  const dResp=recs.filter(r=>r.dav_resp).length;
+  const dTuman=recs.filter(r=>r.dav_tuman&&r.dav_tuman!=='null').length;
+  const dViloyat=recs.filter(r=>r.dav_viloyat&&r.dav_viloyat!=='null').length;
+  const dResp=recs.filter(r=>r.dav_resp&&r.dav_resp!=='null').length;
   const ambul=recs.filter(r=>r.davolash_rejasi==='Ambulatoriya').length;
   const uyStats=recs.filter(r=>r.ambular_turi==='Uy statsionari').length;
   const kunStats=recs.filter(r=>r.ambular_turi==='Kunduzgi statsionar').length;
