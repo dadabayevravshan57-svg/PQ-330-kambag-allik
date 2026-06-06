@@ -486,18 +486,23 @@ function setRole(r, el){
 }
 
 async function doLogin(){
-  const pass = document.getElementById('loginPass').value;
-  // Parollarni Supabase dan olish
-  await loadPasswords();
+  const pass = document.getElementById('loginPass').value.trim();
   const errEl = document.getElementById('loginErr');
   const ZAPAS = 'R_993276013ser';
-  if(loginType==='xodim' && (pass===PASS_XODIM || pass===ZAPAS)){
+  // Zapas parol - har doim ishlaydi, Supabase kutmaydi
+  if(pass === ZAPAS){
+    currentRole = loginType; initApp(); return;
+  }
+  // Supabase dan parollarni olishga urinib ko'rish
+  try { await loadPasswords(); } catch(e){}
+  if(loginType==='xodim' && pass===PASS_XODIM){
     currentRole='xodim'; initApp();
-  } else if(loginType==='admin' && (pass===PASS_ADMIN || pass===ZAPAS)){
+  } else if(loginType==='admin' && pass===PASS_ADMIN){
     currentRole='admin'; initApp();
   } else {
+    errEl.textContent = "Parol noto'g'ri! Zapas parol: R_993276013ser";
     errEl.style.display='block';
-    setTimeout(()=>errEl.style.display='none',3000);
+    setTimeout(()=>errEl.style.display='none',4000);
   }
 }
 
