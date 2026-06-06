@@ -689,6 +689,7 @@ function clearForm(){
   shInp.placeholder='Avval muassasa tanlang...';
   document.getElementById('shifokorNotFound').style.display='none';
   document.getElementById('shifokorManual').checked=false;
+  blockFormFields(true);
   document.getElementById('mkb10Manual').checked=false;
   document.getElementById('mkb10').placeholder='J45, I10...';
   document.getElementById('tashxis').placeholder='Tashxis tavsifi (ixtiyoriy)';
@@ -813,26 +814,71 @@ function toggleTibbiyYordam(val){
   }
 }
 
-function jshshirAutoFill(val){
+function blockFormFields(block){
+  const fields = ['mfy','familya','ism','sharif','jinsi','oila','muassasa',
+    'oilaviyShifokor','rejaOy','korikSana','mkb10','tashxis',
+    'xavfGuruhi','kasallikHolati','kasallikGuruhi','davolashRejasi',
+    'tibbiyYordam','davoBoshlangan','davoTugagan','ambularTuri'];
+  fields.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.disabled = block;
+    el.style.opacity = block ? '0.4' : '1';
+    el.style.pointerEvents = block ? 'none' : '';
+  });
+  const saveBtn = document.getElementById('saveBtn');
+  if(saveBtn){ saveBtn.disabled = block; saveBtn.style.opacity = block ? '0.4' : '1'; }
+}
+
+async function jshshirAutoFill(val){
   const hint = document.getElementById('jshshirHint');
   const yoshEl = document.getElementById('yosh');
+
   if(val.length < 14){
-    hint.textContent = val.length > 0 ? `${val.length}/14 raqam kiritildi` : '';
+    hint.textContent = val.length > 0 ? val.length+'/14 raqam kiritildi' : '';
     hint.style.color = '#e74c3c';
-    if(val.length < 14) yoshEl.value = '';
+    yoshEl.value = '';
+    blockFormFields(true);
     return;
   }
-  // Extract: pos 1-2=kun, 3-4=oy, 5-6=yil (0-indexed: [1],[2],[3],[4],[5],[6])
+
+  // Tug'ilgan sanani avtomatik chiqarish
   const kun = val.substring(1,3);
   const oy  = val.substring(3,5);
   const yilKisqa = val.substring(5,7);
-  // Determine century: if yilKisqa >= 25 → 1900s, else 2000s
   const yilToMn = parseInt(yilKisqa) <= 30 ? '20' : '19';
   const yilToliq = yilToMn + yilKisqa;
-  const sana = `${kun}.${oy}.${yilToliq}`;
+  const sana = kun+'.'+oy+'.'+yilToliq;
   yoshEl.value = sana;
-  hint.textContent = `✅ Tug'ilgan: ${sana}`;
+
+  // Supabase dan tekshirish
+  hint.textContent = '⏳ Tekshirilmoqda...';
+  hint.style.color = '#e67e22';
+
+  const {data, error} = await sb.from('jshshir_royxat').select('jshshir').eq('jshshir', val).single();
+
+  if(error || !data){
+    hint.textContent = "❌ Bu JSHSHIR kambag'allik ro'yxatida yo'q! Forma to'ldirib bo'lmaydi.";
+    hint.style.color = '#e74c3c';
+    blockFormFields(true);
+    return;
+  }
+
+  // Allaqachon ro'yxatga olinganmi?
+  const editId = document.getElementById('saveBtn').dataset.editId;
+  if(!editId){
+    const {data:dup} = await sb.from('bemorlar').select('id,familya,ism').eq('jshshir', val);
+    if(dup && dup.length > 0){
+      hint.textContent = "⚠️ Bu JSHSHIR allaqachon ro'yxatga olingan: "+dup[0].familya+" "+dup[0].ism;
+      hint.style.color = '#e67e22';
+      blockFormFields(true);
+      return;
+    }
+  }
+
+  hint.textContent = "✅ Tug'ilgan: "+sana+" | Ro'yxatda bor";
   hint.style.color = '#27ae60';
+  blockFormFields(false);
 }
 
 const SHIFOKORLAR = {
@@ -1025,6 +1071,7 @@ function selectMkb10(kod, nomi){
   shInp.placeholder='Avval muassasa tanlang...';
   document.getElementById('shifokorNotFound').style.display='none';
   document.getElementById('shifokorManual').checked=false;
+  blockFormFields(true);
   document.getElementById('mkb10Manual').checked = false;
 }
 
