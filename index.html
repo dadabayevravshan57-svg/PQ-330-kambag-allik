@@ -428,6 +428,9 @@ tbody td{padding:8px 10px;color:#333;white-space:nowrap}
 
   <!-- STATS -->
   <div class="panel" id="panel-stats">
+    <div style="margin-bottom:12px">
+      <button onclick="exportHisobot()" style="background:#27ae60;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">📊 Hisobot Excel yuklash</button>
+    </div>
     <div id="statsContent"></div>
   </div>
 
@@ -1321,6 +1324,124 @@ function renderStats(){
         <tbody>${rows}</tbody>
       </table></div>
     </div>`;
+}
+
+// ============ HISOBOT EXCEL ============
+async function exportHisobot(){
+  if(!window.ExcelJS){ showAlert("ExcelJS yuklanmoqda...","info"); await new Promise(r=>setTimeout(r,1500)); }
+  const ExcelJS = window.ExcelJS;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'PQ-330';
+
+  // ---- 1-VARAQ: UMUMIY HISOBOT ----
+  const ws1 = wb.addWorksheet("Umumiy hisobot");
+  const hStyle = (bg) => ({
+    font:{name:'Times New Roman',size:11,bold:true,color:{argb:'FF000000'}},
+    fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+bg}},
+    alignment:{horizontal:'center',vertical:'middle',wrapText:true},
+    border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}
+  });
+  const dStyle = (even) => ({
+    font:{name:'Times New Roman',size:11},
+    fill:{type:'pattern',pattern:'solid',fgColor:{argb:even?'FFFFFFFF':'FFF5F5F5'}},
+    alignment:{horizontal:'center',vertical:'middle',wrapText:true},
+    border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}
+  });
+
+  // Sarlavha
+  const h1 = ws1.addRow(["Ko'rsatkich","Soni"]);
+  h1.eachCell(c=>Object.assign(c,hStyle('BDD7EE')));
+  h1.height = 25;
+
+  const tot = allRecords.length;
+  const otk = allRecords.filter(r=>r.korik_sana).length;
+  const kut = tot - otk;
+  const erk = allRecords.filter(r=>r.jinsi==='Erkak').length;
+  const ayl = allRecords.filter(r=>r.jinsi==='Ayol').length;
+  const mkb = allRecords.filter(r=>r.mkb10).length;
+
+  const umumiy = [
+    ["Jami fuqaro", tot],
+    ["Ko'rik o'tkazildi", otk],
+    ["Kutilmoqda", kut],
+    ["Erkak", erk],
+    ["Ayol", ayl],
+    ["Tashxis qo'yilgan", mkb],
+  ];
+  umumiy.forEach((rd,i)=>{
+    const row = ws1.addRow(rd);
+    row.eachCell(c=>Object.assign(c,dStyle(i%2===0)));
+    row.height = 22;
+  });
+  ws1.columns = [{width:30},{width:12}];
+
+  // ---- 2-VARAQ: MFY BO'YICHA ----
+  const ws2 = wb.addWorksheet("MFY bo'yicha");
+  const mfyH = ws2.addRow(["MFY","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol","Tashxis"]);
+  mfyH.eachCell(c=>Object.assign(c,hStyle('C6EFCE')));
+  mfyH.height = 28;
+
+  let mfyJami = [0,0,0,0,0,0];
+  MFY_LIST.forEach((m,i)=>{
+    const tr = allRecords.filter(r=>r.mfy===m);
+    const jami = tr.length;
+    const otkm = tr.filter(r=>r.korik_sana).length;
+    const kutm = jami - otkm;
+    const erkm = tr.filter(r=>r.jinsi==='Erkak').length;
+    const aylm = tr.filter(r=>r.jinsi==='Ayol').length;
+    const mkbm = tr.filter(r=>r.mkb10).length;
+    mfyJami[0]+=jami; mfyJami[1]+=otkm; mfyJami[2]+=kutm; mfyJami[3]+=erkm; mfyJami[4]+=aylm; mfyJami[5]+=mkbm;
+    const row = ws2.addRow([m, jami, otkm, kutm, erkm, aylm, mkbm]);
+    row.eachCell(c=>Object.assign(c,dStyle(i%2===0)));
+    row.height = 20;
+  });
+  // Jami qatori
+  const jamiRow = ws2.addRow(["JAMI", mfyJami[0], mfyJami[1], mfyJami[2], mfyJami[3], mfyJami[4], mfyJami[5]]);
+  jamiRow.eachCell(c=>Object.assign(c,hStyle('FFD700')));
+  jamiRow.height = 25;
+  ws2.columns = [{width:24},{width:8},{width:18},{width:14},{width:8},{width:8},{width:10}];
+
+  // ---- 3-VARAQ: MUASSASA BO'YICHA ----
+  const ws3 = wb.addWorksheet("Muassasa bo'yicha");
+  const muaH = ws3.addRow(["Muassasa","Jami","Ko'rik o'tkazildi","Kutilmoqda","Erkak","Ayol"]);
+  muaH.eachCell(c=>Object.assign(c,hStyle('E2AFDE')));
+  muaH.height = 28;
+  const muaList = [...new Set(allRecords.map(r=>r.muassasa).filter(Boolean))].sort();
+  muaList.forEach((m,i)=>{
+    const tr = allRecords.filter(r=>r.muassasa===m);
+    const jami = tr.length;
+    const otkm = tr.filter(r=>r.korik_sana).length;
+    const row = ws3.addRow([m, jami, otkm, jami-otkm, tr.filter(r=>r.jinsi==='Erkak').length, tr.filter(r=>r.jinsi==='Ayol').length]);
+    row.eachCell(c=>Object.assign(c,dStyle(i%2===0)));
+    row.height = 20;
+  });
+  ws3.columns = [{width:30},{width:8},{width:18},{width:14},{width:8},{width:8}];
+
+  // ---- 4-VARAQ: XAVF GURUHI ----
+  const ws4 = wb.addWorksheet("Xavf guruhi");
+  const xavfH = ws4.addRow(["Xavf guruhi","Jami","Ko'rik o'tkazildi","Kutilmoqda"]);
+  xavfH.eachCell(c=>Object.assign(c,hStyle('FCE4D6')));
+  xavfH.height = 25;
+  ['1-guruh','2-guruh','3-guruh','4-guruh'].forEach((g,i)=>{
+    const tr = allRecords.filter(r=>r.xavf_guruhi===g||(r.xavf_guruhi&&r.xavf_guruhi.toString()===g.charAt(0)));
+    const jami = tr.length;
+    const row = ws4.addRow([g, jami, tr.filter(r=>r.korik_sana).length, jami-tr.filter(r=>r.korik_sana).length]);
+    row.eachCell(c=>Object.assign(c,dStyle(i%2===0)));
+    row.height = 20;
+  });
+  ws4.columns = [{width:18},{width:8},{width:18},{width:14}];
+
+  // Yuklab olish
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  a.href = url;
+  a.download = "Hisobot_PQ330_"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0')+".xlsx";
+  a.click();
+  URL.revokeObjectURL(url);
+  showAlert("✅ Hisobot yuklab olindi!","ok");
 }
 
 // ADMIN PANEL
