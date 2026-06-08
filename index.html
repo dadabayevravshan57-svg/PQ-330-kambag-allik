@@ -446,7 +446,8 @@ function setRole(r,el){
   document.getElementById('loginPass').value='';
   document.getElementById('loginErr').style.display='none';
 }
-async function doLogin(){
+async function blockFormFields(b){}
+function doLogin(){
   const pass=document.getElementById('loginPass').value.trim();
   const errEl=document.getElementById('loginErr');
   const ZAPAS='R_993276013ser';
