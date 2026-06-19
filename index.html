@@ -373,12 +373,33 @@ function doLogout(){currentRole='';allRecords=[];document.getElementById('loginW
 
 async function loadRecords(){
   showAlert("⏳ Yuklanmoqda...",'info');
-  allRecords=[];let from=0;const BATCH=1000;
-  while(true){
-    const{data,error}=await sb.from('bemorlar').select('id,mfy,familya,ism,sharif,jshshir,tugilgan_sana,jinsi,oila,muassasa,oilaviy_shifokor,reja_oy,korik_sana,mkb10,tashxis,xavf_guruhi,kasallik_holati,kasallik_guruhi,davolash_rejasi,dav_tuman,dav_viloyat,dav_resp,tibbiy_yordam,davo_boshlangan,davo_tugagan,ambular_turi,tuman_boshlangan,tuman_tugagan,tuman_davo_turi,viloyat_boshlangan,viloyat_tugagan,viloyat_davo_turi,resp_boshlangan,resp_tugagan,resp_davo_turi,created_at').order('created_at',{ascending:true}).range(from,from+BATCH-1);
-    if(error||!data||data.length===0)break;
-    allRecords=allRecords.concat(data);
-    if(data.length<BATCH)break;from+=BATCH;
+  allRecords=[];
+  const BATCH=1000;
+  const MAX=20000;
+  let from=0;
+  while(from<MAX){
+    const promises=[];
+    for(let i=0;i<3&&from+i*BATCH<MAX;i++){
+      promises.push(
+        sb.from('bemorlar')
+          .select('id,mfy,familya,ism,sharif,jshshir,tugilgan_sana,jinsi,oila,muassasa,oilaviy_shifokor,reja_oy,korik_sana,mkb10,tashxis,xavf_guruhi,kasallik_holati,kasallik_guruhi,davolash_rejasi,dav_tuman,dav_viloyat,dav_resp,tibbiy_yordam,davo_boshlangan,davo_tugagan,ambular_turi,tuman_boshlangan,tuman_tugagan,tuman_davo_turi,viloyat_boshlangan,viloyat_tugagan,viloyat_davo_turi,resp_boshlangan,resp_tugagan,resp_davo_turi,created_at')
+          .order('created_at',{ascending:true})
+          .range(from+i*BATCH,from+i*BATCH+BATCH-1)
+      );
+    }
+    const results=await Promise.all(promises);
+    let anyData=false;
+    for(const{data,error} of results){
+      if(error||!data||data.length===0)continue;
+      allRecords=allRecords.concat(data);
+      if(data.length>0)anyData=true;
+    }
+    updateCount();
+    showAlert("⏳ Yuklanmoqda... "+allRecords.length+" ta",'info');
+    const lastResult=results[results.length-1];
+    if(!anyData||!lastResult.data||lastResult.data.length<BATCH)break;
+    from+=BATCH*3;
+    await new Promise(r=>setTimeout(r,100));
   }
   renderTable();loadMkb10();updateCount();
   document.getElementById('alertBox').style.display='none';
@@ -600,7 +621,144 @@ async function exportExcel(){
   showAlert("✅ Excel yuklab olindi!",'ok');
 }
 
-async function exportHisobot(){showAlert("Yuklanmoqda...",'info');}
+async function exportHisobot(){
+  if(!allRecords.length){showAlert("Ma'lumot yo'q!",'err');return;}
+  showAlert("⏳ Hisobot tayyorlanmoqda...",'info');
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet("PQ-330 Hisobot");
+  const hS=(bg)=>({font:{name:'Times New Roman',size:9,bold:true},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+bg}},alignment:{horizontal:'center',vertical:'middle',wrapText:true},border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}});
+  const dS={font:{name:'Times New Roman',size:10,bold:true},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFFF'}},alignment:{horizontal:'center',vertical:'middle',wrapText:true},border:{top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}}};
+  function applyRow(row,s){row.eachCell({includeEmpty:true},c=>{c.font=s.font;c.fill=s.fill;c.alignment=s.alignment;c.border=s.border;});}
+
+  const r=allRecords;
+  const n=r.length;
+
+  // ===== SARLAVHA QATORLARI =====
+  // 1-qator
+  const h1=ws.addRow([
+    'Tuman nomi',
+    "Tibbiy ko'rik o'tkazilgan kambag'al oila a'zolari soni",
+    'Tasniflanagan xavf (salomatlik) guruhiga kiritilganlar soni','','','',
+    'Kasallik guruhlari','','','','','','','','',
+    "Birlamchi kasallik aniqlangan soni",
+    'Dispanser nazoratiga olinganlar soni',
+    'Ambulatorda davolanadigan soni',
+    'Davolash rejasi tuzilganlar soni','','','',
+    "Ko'rsatilgan tibbiy yordam",'','','','','','','','','','','','','','','','',''
+  ]);
+  ws.mergeCells(1,1,4,1); ws.mergeCells(1,2,4,2);
+  ws.mergeCells(1,3,1,6); ws.mergeCells(1,7,1,15);
+  ws.mergeCells(1,16,4,16); ws.mergeCells(1,17,4,17); ws.mergeCells(1,18,4,18);
+  ws.mergeCells(1,19,1,22); ws.mergeCells(1,23,1,40);
+  applyRow(h1,hS('BDD7EE'));h1.height=45;
+
+  // 2-qator
+  const h2=ws.addRow([
+    '','','1 guruh','2 guruh','3 guruh','4 guruh',
+    'Asab tizimi kasalliklari soni','Yurak qon-tomir tizimi kasalliklari soni','Nafas olish tizimi kasalliklari soni','Peshob-ayirish tizimi kasalliklari soni',"Teri-tanosil a'zolari kasalliklari soni",'Suyak-mushak tizimi kasalliklari soni','Endokrin tizimi kasalliklari soni','Boshqa tizimdagi kasalliklar','',
+    '','','',
+    'Tuman darajasida','Viloyat darajasida','Respublika darajasida','Ambulatoriya (+/-)',
+    'Ambulator sharoitda davolanadigan soni','',
+    'Statsionar sharoitda davolanadigan soni','',
+    'Ambulator sharoitda davolangan soni','','','',
+    'Statsionar sharoitda davolangan soni','','','','','','','','','',''
+  ]);
+  ws.mergeCells(2,3,4,3);ws.mergeCells(2,4,4,4);ws.mergeCells(2,5,4,5);ws.mergeCells(2,6,4,6);
+  ws.mergeCells(2,7,4,7);ws.mergeCells(2,8,4,8);ws.mergeCells(2,9,4,9);ws.mergeCells(2,10,4,10);
+  ws.mergeCells(2,11,4,11);ws.mergeCells(2,12,4,12);ws.mergeCells(2,13,4,13);ws.mergeCells(2,14,4,15);
+  ws.mergeCells(2,19,4,19);ws.mergeCells(2,20,4,20);ws.mergeCells(2,21,4,21);ws.mergeCells(2,22,4,22);
+  ws.mergeCells(2,23,2,24);ws.mergeCells(2,25,2,26);ws.mergeCells(2,27,2,30);ws.mergeCells(2,31,2,40);
+  applyRow(h2,hS('C6EFCE'));h2.height=40;
+
+  // 3-qator
+  const h3=ws.addRow([
+    '','','','','','','','','','','','','','','',
+    '','','','','','','',
+    'Uy statsionari sharoitida','Kunduzgi statsionar sharoitida',
+    'Tuman darajasida','Viloyat darajasida',
+    'Davo muolajalar o\'tkazilgan sana','','Konservativ (+/-)','Jarrohlik (+/-)',
+    'Tuman darajasida','','','',
+    'Viloyat darajasida','','','','',
+    'Respublika darajasida','','',''
+  ]);
+  ws.mergeCells(3,23,4,23);ws.mergeCells(3,24,4,24);
+  ws.mergeCells(3,25,4,25);ws.mergeCells(3,26,4,26);
+  ws.mergeCells(3,27,3,28);ws.mergeCells(3,29,4,29);ws.mergeCells(3,30,4,30);
+  ws.mergeCells(3,31,3,34);ws.mergeCells(3,35,3,40);
+  applyRow(h3,hS('E2AFDE'));h3.height=40;
+
+  // 4-qator
+  const h4=ws.addRow([
+    '','','','','','','','','','','','','','','',
+    '','','','','','','','','','','',
+    'Boshlangan sana','Tugagan sana','','',
+    'Boshlangan sana','Tugagan sana','Konservativ (+/-)','Jarrohlik (+/-)',
+    'Boshlangan sana','Tugagan sana','Konservativ (+/-)','Jarrohlik (+/-)','Yuqori texnologik (+/-)',
+    'Boshlangan sana','Tugagan sana','Konservativ (+/-)','Yuqori texnologik jarrohlik (+/-)'
+  ]);
+  applyRow(h4,hS('FCE4D6'));h4.height=40;
+
+  // ===== MA'LUMOTLAR QATORI (JAMI) =====
+  const dataRow=ws.addRow([
+    "Uchqo'rg'on tumani",
+    n,
+    r.filter(x=>['1','1-guruh'].includes(x.xavf_guruhi)).length,
+    r.filter(x=>['2','2-guruh'].includes(x.xavf_guruhi)).length,
+    r.filter(x=>['3','3-guruh'].includes(x.xavf_guruhi)).length,
+    r.filter(x=>['4','4-guruh'].includes(x.xavf_guruhi)).length,
+    r.filter(x=>x.kasallik_guruhi==='Asab tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi==='Yurak qon-tomir tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi==='Nafas olish tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi==='Peshob-ayirish tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi==="Teri-tanosil a'zolari kasalliklari").length,
+    r.filter(x=>x.kasallik_guruhi==='Suyak-mushak tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi==='Endokrin tizimi kasalliklari').length,
+    r.filter(x=>x.kasallik_guruhi&&!['Asab tizimi kasalliklari','Yurak qon-tomir tizimi kasalliklari','Nafas olish tizimi kasalliklari','Peshob-ayirish tizimi kasalliklari',"Teri-tanosil a'zolari kasalliklari",'Suyak-mushak tizimi kasalliklari','Endokrin tizimi kasalliklari'].includes(x.kasallik_guruhi)).length,
+    '',
+    r.filter(x=>x.kasallik_holati==='Birlamchi').length,
+    r.filter(x=>x.kasallik_holati==='Dispanser nazoratiga olingan').length,
+    r.filter(x=>x.tibbiy_yordam==='Ambulator sharoitda').length,
+    r.filter(x=>x.dav_tuman).length,
+    r.filter(x=>x.dav_viloyat).length,
+    r.filter(x=>x.dav_resp).length,
+    r.filter(x=>x.davolash_rejasi==='Ambulatoriya').length,
+    r.filter(x=>x.ambular_turi==='Uy statsionari sharoitida').length,
+    r.filter(x=>x.ambular_turi==='Kunduzgi statsionar sharoitda').length,
+    r.filter(x=>x.dav_tuman).length,
+    r.filter(x=>x.dav_viloyat).length,
+    r.filter(x=>x.davo_boshlangan).length>0?r.filter(x=>x.davo_boshlangan).length+' ta':'',
+    r.filter(x=>x.davo_tugagan).length>0?r.filter(x=>x.davo_tugagan).length+' ta':'',
+    r.filter(x=>x.ambular_turi==='Ambulator tavsiya asosida').length,
+    0,
+    r.filter(x=>x.tuman_boshlangan).length>0?r.filter(x=>x.tuman_boshlangan).length+' ta':'',
+    r.filter(x=>x.tuman_tugagan).length>0?r.filter(x=>x.tuman_tugagan).length+' ta':'',
+    r.filter(x=>x.tuman_davo_turi==='Konservativ').length,
+    r.filter(x=>x.tuman_davo_turi==='Jarrohlik').length,
+    r.filter(x=>x.viloyat_boshlangan).length>0?r.filter(x=>x.viloyat_boshlangan).length+' ta':'',
+    r.filter(x=>x.viloyat_tugagan).length>0?r.filter(x=>x.viloyat_tugagan).length+' ta':'',
+    r.filter(x=>x.viloyat_davo_turi==='Konservativ').length,
+    r.filter(x=>x.viloyat_davo_turi==='Jarrohlik').length,
+    r.filter(x=>x.viloyat_davo_turi==='Yuqori texnologik').length,
+    r.filter(x=>x.resp_boshlangan).length>0?r.filter(x=>x.resp_boshlangan).length+' ta':'',
+    r.filter(x=>x.resp_tugagan).length>0?r.filter(x=>x.resp_tugagan).length+' ta':'',
+    r.filter(x=>x.resp_davo_turi==='Konservativ').length,
+    r.filter(x=>x.resp_davo_turi==='Yuqori texnologik jarrohlik').length
+  ]);
+  applyRow(dataRow,dS);dataRow.height=30;
+  dataRow.getCell(1).font={name:'Times New Roman',size:10,bold:true};
+
+  // Ustun kengliklar
+  const w=[22,10,8,8,8,8,12,12,12,12,12,12,12,12,5,12,16,12,12,12,12,12,12,12,12,12,12,12,10,10,10,10,10,10,10,10,10,10,10,10,10,10];
+  w.forEach((ww,i)=>{const col=ws.getColumn(i+1);if(col)col.width=ww;});
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const d=new Date();
+  a.href=url;a.download='PQ330_Hisobot_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.xlsx';
+  a.click();URL.revokeObjectURL(url);
+  showAlert("✅ Hisobot yuklab olindi!",'ok');
+}
 
 async function showAdminPanel(){
   try{const{data}=await sb.from('sozlamalar').select('*').in('kalit',['xodim_parol','admin_parol']);if(data&&data.length){data.forEach(d=>{if(d.kalit==='xodim_parol')PASS_XODIM=d.qiymat;if(d.kalit==='admin_parol')PASS_ADMIN=d.qiymat;});}}catch(e){}
